@@ -20,7 +20,7 @@ public:
 	void OnMouseLDown(WPARAM wParam, int x, int y);
 	void OnMouseRDown(WPARAM wParam, int x, int y);
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
-	bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, float fTimeElapsed);
+	bool OnProcessingKeyboardMessage(ID3D11Device *&pd3dDevice, HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, float fTimeElapsed);
 
 	void CreateObjects(ID3D11Device *&pd3dDevice);
 	void ReleaseObjects();
@@ -30,9 +30,9 @@ public:
 	void Render(ID3D11DeviceContext*&pd3dDeviceContext, float fTimeElapsed);
 
 private:
-	typedef std::list<std::shared_ptr<Object>> List_spObject;
-	List_spObject m_listObject;
-	List_spObject::iterator m_itSelectObject;
+	typedef std::shared_ptr<Object> SP_Object;
+	std::list<SP_Object> m_listObject;
+	std::shared_ptr<Object> m_spSelectObject;
 	POINT	m_poLastMousePos;
 	CHANGE_TYPE m_kChangeType;
 };

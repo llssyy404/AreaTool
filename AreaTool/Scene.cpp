@@ -9,7 +9,7 @@
 
 Scene::Scene()
 {
-	m_itSelectObject = m_listObject.end();
+	m_spSelectObject = NULL;
 	m_kChangeType = C_TRNAS;
 }
 
@@ -55,35 +55,35 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 	bool bPick = false;
 	float fDist = 9999.f;
 	float fMin = 9999.f;
-	std::list<std::shared_ptr<Object>>::iterator iter = m_listObject.begin();
+	SP_Object iter = NULL;
 	for (auto obj : m_listObject)
 	{
-		if (false == IntersectRayAxisAlignedBox(rayPos, rayDir, &obj->GetAABB(), &fDist))
+		if (false == IntersectRayAxisAlignedBox(rayPos, rayDir, &obj->GetAABB(), &fDist))	// 도형 선택
 			continue;
 
-		if(fDist >= fMin)
+		if (fDist >= fMin)
 			continue;
 
 		fMin = fDist;
-		*iter = obj;
+		iter = obj;
 		bPick = true;
 	}
 
 	if (bPick)
 	{
-		if (m_listObject.end() != m_itSelectObject) 
-			(*m_itSelectObject)->SetSelection(false);
+		if (NULL != m_spSelectObject)
+			m_spSelectObject->SetSelection(false);
 
-		m_itSelectObject = iter;
-		(*m_itSelectObject)->SetSelection(true);
+		m_spSelectObject = iter;
+		m_spSelectObject->SetSelection(true);
 	}
 	else
 	{
-		if (m_listObject.end() == m_itSelectObject)
+		if (NULL == m_spSelectObject)
 			return;
 
-		(*m_itSelectObject)->SetSelection(false);
-		m_itSelectObject = m_listObject.end();
+		m_spSelectObject->SetSelection(false);
+		m_spSelectObject = NULL;
 	}
 }
 
@@ -96,34 +96,45 @@ bool Scene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, 
 	return(false);
 }
 
-bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, float fTimeElapsed)
+bool Scene::OnProcessingKeyboardMessage(ID3D11Device *&pd3dDevice, HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, float fTimeElapsed)
 {
+	const float fCamVelocity = 1000.f;
+	const float fPlusDir = 1.f;
+	const float fMinusDir = -1.f;
 	switch (nMessageID)
 	{
 	case WM_KEYDOWN:
 		switch(wParam)
 		{
 		case VK_RIGHT:
-			// 이동 숫자같은거 조정가능하도록
-			Camera::GetInstance().Strafe(1.f);
+			Camera::GetInstance().Strafe(fCamVelocity*fPlusDir*fTimeElapsed);
 			break;
 		case VK_LEFT:
-			Camera::GetInstance().Strafe(-1.f);
+			Camera::GetInstance().Strafe(fCamVelocity*fMinusDir*fTimeElapsed);
 			break;
 		case VK_UP:
-			Camera::GetInstance().Walk(1.f);
+			Camera::GetInstance().Walk(fCamVelocity*fPlusDir*fTimeElapsed);
 			break;
 		case VK_DOWN:
-			Camera::GetInstance().Walk(-1.f);
+			Camera::GetInstance().Walk(fCamVelocity*fMinusDir*fTimeElapsed);
 			break;
 		case VK_DELETE:
 		{
-			if (m_listObject.end() != m_itSelectObject)
+			if (NULL != m_spSelectObject)
 			{
-				m_listObject.remove(*m_itSelectObject);
-				m_itSelectObject = m_listObject.end();
+				m_listObject.remove(m_spSelectObject);
+				m_spSelectObject = NULL;
 			}
 		}break;
+		case '1':
+			m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_BOX)));
+			break;
+		case '2':
+			m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_CYLINDER)));
+			break;
+		case '3':
+			m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_SPHERE)));
+			break;
 		case 'W':
 			m_kChangeType = C_TRNAS;
 			break;
@@ -138,13 +149,13 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_kChangeType)
 			{
 			case C_TRNAS:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Forward(1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Forward(1.f);
 				break;
 			case C_ROT:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Roll(10.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Roll(10.f);
 				break;
 			case C_SCALE:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingZ(1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->ScalingZ(1.f);
 				break;
 			default:
 				break;
@@ -155,13 +166,13 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_kChangeType)
 			{
 			case C_TRNAS:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Forward(-1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Forward(-1.f);
 				break;
 			case C_ROT:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Roll(-10.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Roll(-10.f);
 				break;
 			case C_SCALE:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingZ(-1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->ScalingZ(-1.f);
 				break;
 			default:
 				break;
@@ -172,13 +183,13 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_kChangeType)
 			{
 			case C_TRNAS:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Right(1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Right(1.f);
 				break;
 			case C_ROT:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Pitch(10.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Pitch(10.f);
 				break;
 			case C_SCALE:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingX(1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->ScalingX(1.f);
 				break;
 			default:
 				break;
@@ -189,13 +200,13 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_kChangeType)
 			{
 			case C_TRNAS:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Right(-1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Right(-1.f);
 				break;
 			case C_ROT:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Pitch(-10.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Pitch(-10.f);
 				break;
 			case C_SCALE:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingX(-1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->ScalingX(-1.f);
 				break;
 			default:
 				break;
@@ -206,13 +217,13 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_kChangeType)
 			{
 			case C_TRNAS:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Up(1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Up(1.f);
 				break;
 			case C_ROT:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Yaw(10.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Yaw(10.f);
 				break;
 			case C_SCALE:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingY(1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->ScalingY(1.f);
 				break;
 			default:
 				break;
@@ -223,13 +234,13 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_kChangeType)
 			{
 			case C_TRNAS:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Up(-1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Up(-1.f);
 				break;
 			case C_ROT:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Yaw(-10.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->Yaw(-10.f);
 				break;
 			case C_SCALE:
-				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingY(-1.f);
+				if (NULL != m_spSelectObject) m_spSelectObject->ScalingY(-1.f);
 				break;
 			default:
 				break;
@@ -250,14 +261,15 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 
 void Scene::CreateObjects(ID3D11Device *&pd3dDevice)
 {
+	m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_GRID)));
 	//for (int i = 0; i < 5; ++i)
-		m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_BOX)));
-		m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_GRID)));
+	//	m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_BOX)));
 
 }
 
 void Scene::ReleaseObjects()
 {
+	m_spSelectObject = NULL;
 }
 
 bool Scene::ProcessInput(float timeElapsed, HWND hwnd)
@@ -267,6 +279,6 @@ bool Scene::ProcessInput(float timeElapsed, HWND hwnd)
 
 void Scene::Render(ID3D11DeviceContext*&pd3dDeviceContext, float fTimeElapsed)
 {
-	for (auto &obj : m_listObject)
+	for (auto obj : m_listObject)
 		obj->Render(pd3dDeviceContext);
 }

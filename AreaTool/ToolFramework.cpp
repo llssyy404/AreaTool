@@ -182,7 +182,7 @@ void ToolFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPAR
 	switch (nMessageID)
 	{
 	case WM_KEYUP:
-		if (m_pkScene)m_pkScene->OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam, m_kTimer.GetTimeElapsed());
+		if (m_pkScene)m_pkScene->OnProcessingKeyboardMessage(m_pd3dDevice, hWnd, nMessageID, wParam, lParam, m_kTimer.GetTimeElapsed());
 		switch (wParam)
 		{
 		case VK_ESCAPE:
@@ -194,7 +194,7 @@ void ToolFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPAR
 		break;
 	case WM_CHAR:
 	case WM_KEYDOWN:
-		if (m_pkScene)m_pkScene->OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam, m_kTimer.GetTimeElapsed());
+		if (m_pkScene)m_pkScene->OnProcessingKeyboardMessage(m_pd3dDevice, hWnd, nMessageID, wParam, lParam, m_kTimer.GetTimeElapsed());
 		break;
 	default:
 		break;
