@@ -83,7 +83,7 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_AREATOOL);
-	wcex.lpszClassName = L"TutorialWindowClass";
+	wcex.lpszClassName = L"AreaTool";
 	wcex.hIconSm = LoadIcon(wcex.hInstance, (LPCTSTR)IDI_AREATOOL);
 	if (!RegisterClassEx(&wcex))
 		return E_FAIL;
@@ -92,7 +92,7 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 	g_hInst = hInstance;
 	RECT rc = { 0, 0, DEFINE::SCREEN_WIDTH, DEFINE::SCREEN_HEIGHT };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-	g_hWnd = CreateWindow(L"TutorialWindowClass", L"Direct3D 11 Tutorial 4: 3D Spaces", WS_OVERLAPPEDWINDOW,
+	g_hWnd = CreateWindow(L"AreaTool", L"AreaTool", WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, hInstance,
 		NULL);
 	if (!g_hWnd)
