@@ -10,6 +10,7 @@
 Scene::Scene()
 {
 	m_itSelectObject = m_listObject.end();
+	m_kChangeType = C_TRNAS;
 }
 
 Scene::~Scene()
@@ -65,24 +66,23 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 
 		fMin = fDist;
 		*iter = obj;
-		std::cout << "충돌 최단거리: " << fMin << std::endl;
 		bPick = true;
 	}
 
 	if (bPick)
 	{
 		if (m_listObject.end() != m_itSelectObject) 
-			(*m_itSelectObject)->SetSelection();
+			(*m_itSelectObject)->SetSelection(false);
 
 		m_itSelectObject = iter;
-		(*m_itSelectObject)->SetSelection();
+		(*m_itSelectObject)->SetSelection(true);
 	}
 	else
 	{
 		if (m_listObject.end() == m_itSelectObject)
 			return;
 
-		(*m_itSelectObject)->SetSelection();
+		(*m_itSelectObject)->SetSelection(false);
 		m_itSelectObject = m_listObject.end();
 	}
 }
@@ -116,48 +116,125 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 		case VK_DOWN:
 			Camera::GetInstance().Walk(-1.f);
 			break;
-		case '1':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Forward(1.f);
-			break;
-		case '2':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Forward(-1.f);
-			break;
-		case '3':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Up(0.5f);
-			break;
-		case '4':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Up(-0.5f);
-			break;
-		case 'T':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Yaw(10.f);
-			break;
-		case 'G':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Yaw(-10.f);
-			break;
-		case 'H':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Pitch(10.f);
-			break;
-		case 'F':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Pitch(-10.f);
-			break;
-		case 'Q':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingX(1.f);
-			break;
-		case 'A':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingX(-1.f);
-			break;
+		case VK_DELETE:
+		{
+			if (m_listObject.end() != m_itSelectObject)
+			{
+				m_listObject.remove(*m_itSelectObject);
+				m_itSelectObject = m_listObject.end();
+			}
+		}break;
 		case 'W':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingY(1.f);
-			break;
-		case 'S':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingY(-1.f);
+			m_kChangeType = C_TRNAS;
 			break;
 		case 'E':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingZ(1.f);
+			m_kChangeType = C_ROT;
 			break;
-		case 'D':
-			if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingZ(-1.f);
+		case 'R':
+			m_kChangeType = C_SCALE;
 			break;
+		case 'T':
+		{
+			switch (m_kChangeType)
+			{
+			case C_TRNAS:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Forward(1.f);
+				break;
+			case C_ROT:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Roll(10.f);
+				break;
+			case C_SCALE:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingZ(1.f);
+				break;
+			default:
+				break;
+			}
+		}break;
+		case 'G':
+		{
+			switch (m_kChangeType)
+			{
+			case C_TRNAS:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Forward(-1.f);
+				break;
+			case C_ROT:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Roll(-10.f);
+				break;
+			case C_SCALE:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingZ(-1.f);
+				break;
+			default:
+				break;
+			}
+		}break;
+		case 'H':
+		{
+			switch (m_kChangeType)
+			{
+			case C_TRNAS:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Right(1.f);
+				break;
+			case C_ROT:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Pitch(10.f);
+				break;
+			case C_SCALE:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingX(1.f);
+				break;
+			default:
+				break;
+			}
+		}break;
+		case 'F':
+		{
+			switch (m_kChangeType)
+			{
+			case C_TRNAS:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Right(-1.f);
+				break;
+			case C_ROT:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Pitch(-10.f);
+				break;
+			case C_SCALE:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingX(-1.f);
+				break;
+			default:
+				break;
+			}
+		}break;
+		case 'Y':
+		{
+			switch (m_kChangeType)
+			{
+			case C_TRNAS:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Up(1.f);
+				break;
+			case C_ROT:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Yaw(10.f);
+				break;
+			case C_SCALE:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingY(1.f);
+				break;
+			default:
+				break;
+			}
+		}break;
+		case 'V':
+		{
+			switch (m_kChangeType)
+			{
+			case C_TRNAS:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Up(-1.f);
+				break;
+			case C_ROT:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->Yaw(-10.f);
+				break;
+			case C_SCALE:
+				if (m_listObject.end() != m_itSelectObject) (*m_itSelectObject)->ScalingY(-1.f);
+				break;
+			default:
+				break;
+			}
+		}break;
 		default:
 			break;
 		}
@@ -174,8 +251,9 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 void Scene::CreateObjects(ID3D11Device *&pd3dDevice)
 {
 	//for (int i = 0; i < 5; ++i)
-	m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_CYLINDER)));
-	m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_GRID)));
+		m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_BOX)));
+		m_listObject.push_back(std::shared_ptr<Object>(new Object(pd3dDevice, DEFINE::F_GRID)));
+
 }
 
 void Scene::ReleaseObjects()

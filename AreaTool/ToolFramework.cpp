@@ -95,7 +95,30 @@ HRESULT ToolFramework::InitDevice(HWND hWnd)
 	if (FAILED(hr))
 		return hr;
 
-	m_pImmediateContext->OMSetRenderTargets(1, &m_pRenderTargetView, NULL);
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+	ZeroMemory(&depthStencilDesc, sizeof(D3D11_TEXTURE2D_DESC));
+	depthStencilDesc.Width = DEFINE::SCREEN_WIDTH;
+	depthStencilDesc.Height = DEFINE::SCREEN_HEIGHT;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	//Create the Depth/Stencil View
+	hr = m_pd3dDevice->CreateTexture2D(&depthStencilDesc, NULL, &m_pd3dDepthStencilBuffer);
+	if (FAILED(hr))
+		return hr;
+
+	hr = m_pd3dDevice->CreateDepthStencilView(m_pd3dDepthStencilBuffer, NULL, &m_pd3dDepthStencilView);
+	if (FAILED(hr))
+		return hr;
+
+	m_pImmediateContext->OMSetRenderTargets(1, &m_pRenderTargetView, m_pd3dDepthStencilView);
 
 	// camera setting
 	Camera::GetInstance().SetViewport(m_pImmediateContext, 0, 0, DEFINE::SCREEN_WIDTH, DEFINE::SCREEN_HEIGHT, 0.0f, 1.0f);
@@ -120,6 +143,8 @@ void ToolFramework::CleanupDevice()
 	if (m_pkScene) delete m_pkScene;
 
 	if (m_pImmediateContext) m_pImmediateContext->ClearState();
+	if (m_pd3dDepthStencilView) m_pd3dDepthStencilView->Release();
+	if (m_pd3dDepthStencilBuffer) m_pd3dDepthStencilBuffer->Release();
 	if (m_pRenderTargetView) m_pRenderTargetView->Release();
 	if (m_pSwapChain) m_pSwapChain->Release();
 	if (m_pImmediateContext) m_pImmediateContext->Release();
@@ -211,6 +236,7 @@ void ToolFramework::Render()
 
 	float ClearColor[4] = { 0.5f, 0.7f, 1.f, 1.0f }; // red,green,blue,alpha
 	m_pImmediateContext->ClearRenderTargetView(m_pRenderTargetView, ClearColor);
+	m_pImmediateContext->ClearDepthStencilView(m_pd3dDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	m_pkScene->Render(m_pImmediateContext, m_kTimer.GetTimeElapsed());
 

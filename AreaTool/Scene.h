@@ -2,6 +2,14 @@
 
 class Object;
 
+
+enum CHANGE_TYPE
+{
+	C_TRNAS,
+	C_ROT,
+	C_SCALE,
+};
+
 class Scene
 {
 public:
@@ -26,4 +34,5 @@ private:
 	List_spObject m_listObject;
 	List_spObject::iterator m_itSelectObject;
 	POINT	m_poLastMousePos;
+	CHANGE_TYPE m_kChangeType;
 };

@@ -854,12 +854,6 @@ VOID TransformAxisAlignedBox( AxisAlignedBox* pOut, const AxisAlignedBox* pIn, F
     // Store center and extents.
 	XMStoreFloat3(&pOut->Center, Translation);
 	XMStoreFloat3(&pOut->Scale, Scale);
-    //XMStoreFloat3( &pOut->Extents, ( Max - Min ) * 0.5f );
-	
-	//XMFLOAT3 d;
-	//XMStoreFloat3(&d, Rotation);
-	//std::cout << d.x << ", " << d.y << ", " << d.z << std::endl;
-	//std::cout << pOut->Center.x << ", " << pOut->Center.y << ", " << pOut->Center.z << std::endl;
 	
 	return;
 }

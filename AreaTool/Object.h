@@ -22,7 +22,6 @@ public:
 	~Object();
 
 	HRESULT		Init(ID3D11Device* &pd3dDevice);
-	
 	HRESULT		CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 	HRESULT		CreateRasterizerState(ID3D11Device* &pd3dDevice);
 	HRESULT		CreateConstantBuffer(ID3D11Device* &pd3dDevice);
@@ -48,11 +47,11 @@ public:
 	XMFLOAT3	GetUp() const { return m_vUp; }
 	XMFLOAT3    GetLook() const { return m_vLook; }
 	XNA::AxisAlignedBox GetAABB() const { return m_AxisAlignedBox; }
-	void		SetSelection() { m_bSelect = !m_bSelect; }
+	void		SetSelection(bool sel) { m_bSelect = sel; }
 
 	void		Render(ID3D11DeviceContext* pDeviceContext);
 
-private:
+protected:
 	XMFLOAT3 m_vRight;
 	XMFLOAT3 m_vUp;
 	XMFLOAT3 m_vLook;
@@ -69,7 +68,7 @@ private:
 	ID3D11RasterizerState*	m_pRasterizerStateWire;
 	ID3D11RasterizerState*	m_pRasterizerStateSolid;
 
-	XMFLOAT4X4			m_f4x4World;
+	XMFLOAT4X4				m_f4x4World;
 	XMMATRIX                m_World;
 
 	XNA::AxisAlignedBox m_AxisAlignedBox;

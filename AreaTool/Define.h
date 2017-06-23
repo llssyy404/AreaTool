@@ -11,8 +11,8 @@ namespace DEFINE
 
 	enum FIGURE_TYPE
 	{
-		F_BOX,
 		F_GRID,
+		F_BOX,
 		F_SPHERE,
 		F_CYLINDER,
 		MAX_FIGURE_TYPE

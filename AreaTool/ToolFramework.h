@@ -33,6 +33,8 @@ private:
 	ID3D11DeviceContext*    m_pImmediateContext;
 	IDXGISwapChain*         m_pSwapChain;
 	ID3D11RenderTargetView* m_pRenderTargetView;
+	ID3D11Texture2D*		m_pd3dDepthStencilBuffer;
+	ID3D11DepthStencilView*	m_pd3dDepthStencilView;
 	
 	Scene*					m_pkScene;
 };

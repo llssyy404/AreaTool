@@ -124,7 +124,7 @@ HRESULT Object::CreateRasterizerState(ID3D11Device* &pd3dDevice)
 	D3D11_RASTERIZER_DESC rsDesc;
 	ZeroMemory(&rsDesc, sizeof(D3D11_RASTERIZER_DESC));
 	rsDesc.FillMode = D3D11_FILL_WIREFRAME;
-	rsDesc.CullMode = D3D11_CULL_NONE;
+	rsDesc.CullMode = D3D11_CULL_BACK;
 	rsDesc.FrontCounterClockwise = false;
 	rsDesc.DepthClipEnable = true;
 
@@ -311,7 +311,6 @@ void Object::Yaw(float fAngle)
 	m_f3Rotation.y += fAngle;
 	WorldMatrixSRT();
 }
-
 
 void Object::Roll(float fAngle)
 {
