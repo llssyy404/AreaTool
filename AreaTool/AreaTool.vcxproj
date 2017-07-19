@@ -154,6 +154,7 @@
   <ItemGroup>
     <ClInclude Include="AreaTool.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DeviceManager.h" />
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Resource.h" />
@@ -168,6 +169,7 @@
   <ItemGroup>
     <ClCompile Include="AreaTool.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DeviceManager.cpp" />
     <ClCompile Include="GeometryGenerator.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Scene.cpp" />

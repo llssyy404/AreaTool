@@ -1,6 +1,7 @@
 #pragma once
 
 #include "xnacollision.h"
+#include "GeometryGenerator.h"
 
 struct SimpleVertex
 {
@@ -18,19 +19,20 @@ struct ConstantBuffer
 class Object
 {
 public:
-	Object(ID3D11Device* &pd3dDevice, int num);
-	~Object();
+	Object();
+	virtual ~Object();
 
-	HRESULT		Init(ID3D11Device* &pd3dDevice);
+	HRESULT		Init();
 	HRESULT		CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
-	HRESULT		CreateRasterizerState(ID3D11Device* &pd3dDevice);
-	HRESULT		CreateConstantBuffer(ID3D11Device* &pd3dDevice);
-	HRESULT		CreatePixelShader(ID3D11Device* &pd3dDevice);
-	HRESULT		CreateInputLayout(ID3D11Device* &pd3dDevice, ID3DBlob * &pVSBlob);
-	HRESULT		CreateVertexShader(ID3D11Device* &pd3dDevice, ID3DBlob * &pVSBlob);
-	void		BuildGeometryBuffers(ID3D11Device* &pd3dDevice);
-	void		CreateIndexBuffer(std::vector<UINT> &indices, ID3D11Device *& pd3dDevice);
-	void		CreateVertexBuffer(std::vector<SimpleVertex> &vertices, ID3D11Device *& pd3dDevice);
+	HRESULT		CreateRasterizerState();
+	HRESULT		CreateConstantBuffer();
+	HRESULT		CreatePixelShader();
+	HRESULT		CreateInputLayout(ID3DBlob * &pVSBlob);
+	HRESULT		CreateVertexShader(ID3DBlob * &pVSBlob);
+	virtual	void CreateFigure(GeometryGenerator::MeshData& kMeshData) = 0;
+	void		BuildGeometryBuffers();
+	void		CreateIndexBuffer(const std::vector<UINT> &indices);
+	void		CreateVertexBuffer(const std::vector<SimpleVertex> &vertices);
 
 	void		WorldMatrixSRT();
 	void		Pitch(float fAngle);
@@ -39,9 +41,9 @@ public:
 	void		Right(float d);
 	void		Forward(float d);
 	void		Up(float d);
-	void		ScalingX(float size);
-	void		ScalingY(float size);
-	void		ScalingZ(float size);
+	virtual void		ScalingX(float size);
+	virtual void		ScalingY(float size);
+	virtual void		ScalingZ(float size);
 
 	XMFLOAT3	GetRight() const { return m_vRight; }
 	XMFLOAT3	GetUp() const { return m_vUp; }
@@ -49,7 +51,7 @@ public:
 	XNA::AxisAlignedBox GetAABB() const { return m_AxisAlignedBox; }
 	void		SetSelection(bool sel) { m_bSelect = sel; }
 
-	void		Render(ID3D11DeviceContext* pDeviceContext);
+	void		Render();
 
 protected:
 	XMFLOAT3 m_vRight;
@@ -77,7 +79,36 @@ protected:
 	int m_iVertexOffset;
 	UINT m_uiIndexOffset;
 	UINT m_uiIndexCount;
-
-	int m_iNum;
 };
 
+class Box : public Object
+{
+public:
+	Box();
+	virtual ~Box();
+	virtual void CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
+};
+
+class Cylinder : public Object
+{
+public:
+	Cylinder();
+	virtual ~Cylinder();
+	virtual void CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
+};
+
+class Sphere : public Object
+{
+public:
+	Sphere();
+	virtual ~Sphere();
+	virtual void CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
+};
+
+class Grid : public Object
+{
+public:
+	Grid();
+	virtual ~Grid();
+	virtual void CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
+};

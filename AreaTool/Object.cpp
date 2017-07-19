@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "Define.h"
+#include "DeviceManager.h"
 #include "GeometryGenerator.h"
 #include "Camera.h"
 
 #include "Object.h"
 
-Object::Object(ID3D11Device* &pd3dDevice, int num)
+Object::Object()
 {
-	m_iNum = num;
 	m_bSelect = false;
 
 	m_f3Scale = XMFLOAT3(1.f, 1.f, 1.f);
@@ -16,14 +16,10 @@ Object::Object(ID3D11Device* &pd3dDevice, int num)
 	m_vLook = XMFLOAT3(0.f, 0.f, 1.f);
 	m_vPosition = XMFLOAT3(0.f, 0.f, 0.f);
 	m_f3Rotation = XMFLOAT3(0.f, 0.f, 0.f);
-	Init(pd3dDevice);
 
-	if (m_iNum != DEFINE::F_GRID)
-	{
-		m_AxisAlignedBox.Center = m_vPosition;
-		m_AxisAlignedBox.Extents = XMFLOAT3(0.5f, 0.5f, 0.5f);
-		m_AxisAlignedBox.Scale = XMFLOAT3(1.f, 1.f, 1.f);
-	}
+	m_AxisAlignedBox.Center = m_vPosition;
+	m_AxisAlignedBox.Extents = XMFLOAT3(0.5f, 0.5f, 0.5f);
+	m_AxisAlignedBox.Scale = XMFLOAT3(1.f, 1.f, 1.f);
 }
 
 Object::~Object()
@@ -38,41 +34,41 @@ Object::~Object()
 	if (m_pPixelShader) m_pPixelShader->Release();
 }
 
-HRESULT Object::Init(ID3D11Device* &pd3dDevice)
+HRESULT Object::Init()
 {
 	HRESULT hr = S_OK;
 	ID3DBlob* pVSBlob = NULL;
-	hr = CreateVertexShader(pd3dDevice, pVSBlob);
+	hr = CreateVertexShader(pVSBlob);
 	if (FAILED(hr))
 	{
 		std::cout << "Failed CreateVertexShader" << std::endl;
 		return hr;
 	}
 
-	hr = CreateInputLayout(pd3dDevice, pVSBlob);
+	hr = CreateInputLayout(pVSBlob);
 	if (FAILED(hr))
 	{
 		std::cout << "Failed CreateInputLayout" << std::endl;
 		return hr;
 	}
 
-	hr = CreatePixelShader(pd3dDevice);
+	hr = CreatePixelShader();
 	if (FAILED(hr))
 	{
 		std::cout << "Failed CreatePixelShader" << std::endl;
 		return hr;
 	}
 
-	BuildGeometryBuffers(pd3dDevice);
+	BuildGeometryBuffers();
 
-	hr = CreateConstantBuffer(pd3dDevice);
+	hr = CreateConstantBuffer();
 	if (FAILED(hr))
 	{
 		std::cout << "Failed CreateConstantBuffer" << std::endl;
 		return hr;
 	}
 
-	hr = CreateRasterizerState(pd3dDevice);
+	hr = CreateRasterizerState();
 	if (FAILED(hr))
 	{
 		std::cout << "Failed CreateRasterizerState" << std::endl;
@@ -118,7 +114,7 @@ HRESULT Object::CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LP
 	return S_OK;
 }
 
-HRESULT Object::CreateRasterizerState(ID3D11Device* &pd3dDevice)
+HRESULT Object::CreateRasterizerState()
 {
 	HRESULT hResult = S_OK;
 	D3D11_RASTERIZER_DESC rsDesc;
@@ -128,7 +124,7 @@ HRESULT Object::CreateRasterizerState(ID3D11Device* &pd3dDevice)
 	rsDesc.FrontCounterClockwise = false;
 	rsDesc.DepthClipEnable = true;
 
-	hResult = pd3dDevice->CreateRasterizerState(&rsDesc, &m_pRasterizerStateWire);
+	hResult = DeviceManager::GetInstance().GetDevice()->CreateRasterizerState(&rsDesc, &m_pRasterizerStateWire);
 	if (FAILED(hResult))
 		return hResult;
 
@@ -138,14 +134,14 @@ HRESULT Object::CreateRasterizerState(ID3D11Device* &pd3dDevice)
 	rsDesc.FrontCounterClockwise = false;
 	rsDesc.DepthClipEnable = true;
 
-	hResult = pd3dDevice->CreateRasterizerState(&rsDesc, &m_pRasterizerStateSolid);
+	hResult = DeviceManager::GetInstance().GetDevice()->CreateRasterizerState(&rsDesc, &m_pRasterizerStateSolid);
 	if (FAILED(hResult))
 		return hResult;
 
 	return hResult;
 }
 
-HRESULT Object::CreateConstantBuffer(ID3D11Device* &pd3dDevice)
+HRESULT Object::CreateConstantBuffer()
 {
 	HRESULT hResult = S_OK;
 	D3D11_BUFFER_DESC bd;
@@ -154,12 +150,12 @@ HRESULT Object::CreateConstantBuffer(ID3D11Device* &pd3dDevice)
 	bd.ByteWidth = sizeof(ConstantBuffer);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
-	hResult = pd3dDevice->CreateBuffer(&bd, NULL, &m_pConstantBuffer);
+	hResult = DeviceManager::GetInstance().GetDevice()->CreateBuffer(&bd, NULL, &m_pConstantBuffer);
 
 	return hResult;
 }
 
-HRESULT Object::CreatePixelShader(ID3D11Device* &pd3dDevice)
+HRESULT Object::CreatePixelShader()
 {
 	HRESULT hResult = S_OK;
 	ID3DBlob* pPSBlob = NULL;
@@ -171,13 +167,13 @@ HRESULT Object::CreatePixelShader(ID3D11Device* &pd3dDevice)
 		return hResult;
 	}
 
-	hResult = pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &m_pPixelShader);
+	hResult = DeviceManager::GetInstance().GetDevice()->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &m_pPixelShader);
 	pPSBlob->Release();
 
 	return hResult;
 }
 
-HRESULT Object::CreateInputLayout(ID3D11Device* &pd3dDevice, ID3DBlob * &pVSBlob)
+HRESULT Object::CreateInputLayout(ID3DBlob * &pVSBlob)
 {
 	HRESULT hResult = S_OK;
 	D3D11_INPUT_ELEMENT_DESC layout[] =
@@ -188,7 +184,7 @@ HRESULT Object::CreateInputLayout(ID3D11Device* &pd3dDevice, ID3DBlob * &pVSBlob
 	UINT numElements = ARRAYSIZE(layout);
 
 	// Create the input layout
-	hResult = pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
+	hResult = DeviceManager::GetInstance().GetDevice()->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
 		pVSBlob->GetBufferSize(), &m_pVertexLayout);
 	pVSBlob->Release();
 	if (FAILED(hResult))
@@ -197,7 +193,7 @@ HRESULT Object::CreateInputLayout(ID3D11Device* &pd3dDevice, ID3DBlob * &pVSBlob
 	return hResult;
 }
 
-HRESULT Object::CreateVertexShader(ID3D11Device* &pd3dDevice, ID3DBlob * &pVSBlob)
+HRESULT Object::CreateVertexShader(ID3DBlob * &pVSBlob)
 {
 	HRESULT hResult = S_OK;
 	hResult = CompileShaderFromFile(L"AreaTool.fx", "VS", "vs_4_0", &pVSBlob);
@@ -208,7 +204,7 @@ HRESULT Object::CreateVertexShader(ID3D11Device* &pd3dDevice, ID3DBlob * &pVSBlo
 		return hResult;
 	}
 
-	hResult = pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &m_pVertexShader);
+	hResult = DeviceManager::GetInstance().GetDevice()->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &m_pVertexShader);
 	if (FAILED(hResult))
 	{
 		pVSBlob->Release();
@@ -218,75 +214,53 @@ HRESULT Object::CreateVertexShader(ID3D11Device* &pd3dDevice, ID3DBlob * &pVSBlo
 	return hResult;
 }
 
-void Object::BuildGeometryBuffers(ID3D11Device* &pd3dDevice)
+void Object::BuildGeometryBuffers()
 {
 	GeometryGenerator::MeshData object;
-	GeometryGenerator geoGen;
 	XMFLOAT4 color = DEFINE::COLOR_WHITE;
 
-	switch (m_iNum)
-	{
-	case DEFINE::F_BOX:
-		geoGen.CreateBox(1.0f, 1.0f, 1.0f, object);
-		break;
-	case DEFINE::F_GRID:
-	{
-		color = DEFINE::COLOR_GRAY;
-		geoGen.CreateGrid(30.0f, 30.0f, 30, 30, object);
-	}break;
-	case DEFINE::F_SPHERE:
-		geoGen.CreateSphere(0.5f, 10, 10, object);
-		break;
-	case DEFINE::F_CYLINDER:
-		geoGen.CreateCylinder(0.5f, 0.5f, 1.0f, 8, 1, object);
-		break;
-	default:
-	{
-		std::cout << "Invalid Figure Type" << std::endl;
-	}break;
-	}
+	CreateFigure(object);
 
 	m_iVertexOffset = 0;
-	m_uiIndexCount = object.Indices.size();
+	m_uiIndexCount = static_cast<UINT>(object.Indices.size());
 	m_uiIndexOffset = 0;
 
 	std::vector<SimpleVertex> vertices(object.Vertices.size());
 
-	UINT k = 0;
-	for (size_t i = 0; i < object.Vertices.size(); ++i, ++k)
+	for (size_t i = 0; i < object.Vertices.size(); ++i)
 	{
-		vertices[k].m_f3Pos = object.Vertices[i].Position;
-		vertices[k].m_f4Color = color;
+		vertices[i].m_f3Pos = object.Vertices[i].Position;
+		vertices[i].m_f4Color = color;
 	}
 
-	CreateVertexBuffer(vertices, pd3dDevice);
-	CreateIndexBuffer(object.Indices, pd3dDevice);
+	CreateVertexBuffer(vertices);
+	CreateIndexBuffer(object.Indices);
 }
 
-void Object::CreateIndexBuffer(std::vector<UINT> &indices, ID3D11Device *& pd3dDevice)
+void Object::CreateIndexBuffer(const std::vector<UINT> &indices)
 {
 	D3D11_BUFFER_DESC ibd;
 	ibd.Usage = D3D11_USAGE_IMMUTABLE;
-	ibd.ByteWidth = sizeof(UINT) * indices.size();
+	ibd.ByteWidth = sizeof(UINT) * static_cast<UINT>(indices.size());
 	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	ibd.CPUAccessFlags = 0;
 	ibd.MiscFlags = 0;
 	D3D11_SUBRESOURCE_DATA iinitData;
 	iinitData.pSysMem = &indices[0];
-	pd3dDevice->CreateBuffer(&ibd, &iinitData, &m_pIndexBuffer);
+	DeviceManager::GetInstance().GetDevice()->CreateBuffer(&ibd, &iinitData, &m_pIndexBuffer);
 }
 
-void Object::CreateVertexBuffer(std::vector<SimpleVertex> &vertices, ID3D11Device *& pd3dDevice)
+void Object::CreateVertexBuffer(const std::vector<SimpleVertex> &vertices)
 {
 	D3D11_BUFFER_DESC vbd;
 	vbd.Usage = D3D11_USAGE_IMMUTABLE;
-	vbd.ByteWidth = sizeof(SimpleVertex) * vertices.size();
+	vbd.ByteWidth = sizeof(SimpleVertex) * static_cast<UINT>(vertices.size());
 	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vbd.CPUAccessFlags = 0;
 	vbd.MiscFlags = 0;
 	D3D11_SUBRESOURCE_DATA vinitData;
 	vinitData.pSysMem = &vertices[0];
-	pd3dDevice->CreateBuffer(&vbd, &vinitData, &m_pVertexBuffer);
+	DeviceManager::GetInstance().GetDevice()->CreateBuffer(&vbd, &vinitData, &m_pVertexBuffer);
 }
 
 void Object::WorldMatrixSRT()
@@ -375,28 +349,101 @@ void Object::ScalingZ(float size)
 	WorldMatrixSRT();
 }
 
-void Object::Render(ID3D11DeviceContext* pDeviceContext)
+void Object::Render()
 {
 	ConstantBuffer cb;
 	cb.m_mtWorld = XMMatrixTranspose(m_World);
 	cb.m_mtView = XMMatrixTranspose(Camera::GetInstance().View());
 	cb.m_mtProjection = XMMatrixTranspose(Camera::GetInstance().Proj());
-	pDeviceContext->UpdateSubresource(m_pConstantBuffer, 0, NULL, &cb, 0, 0);
+	DeviceManager::GetInstance().GetDeviceContext()->UpdateSubresource(m_pConstantBuffer, 0, NULL, &cb, 0, 0);
 
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
-	pDeviceContext->IASetInputLayout(m_pVertexLayout);
-	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
-	pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetInputLayout(m_pVertexLayout);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
 	if(m_bSelect)
-		pDeviceContext->RSSetState(m_pRasterizerStateSolid);
+		DeviceManager::GetInstance().GetDeviceContext()->RSSetState(m_pRasterizerStateSolid);
 	else
-		pDeviceContext->RSSetState(m_pRasterizerStateWire);
-	pDeviceContext->VSSetShader(m_pVertexShader, NULL, 0);
-	pDeviceContext->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
-	pDeviceContext->PSSetShader(m_pPixelShader, NULL, 0);
+		DeviceManager::GetInstance().GetDeviceContext()->RSSetState(m_pRasterizerStateWire);
+	DeviceManager::GetInstance().GetDeviceContext()->VSSetShader(m_pVertexShader, NULL, 0);
+	DeviceManager::GetInstance().GetDeviceContext()->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
+	DeviceManager::GetInstance().GetDeviceContext()->PSSetShader(m_pPixelShader, NULL, 0);
 	
-	pDeviceContext->DrawIndexed(m_uiIndexCount, m_uiIndexOffset, m_iVertexOffset);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexOffset, m_iVertexOffset);
+}
+
+///////////////////////////////////////////////////////////////////////////
+Box::Box() : Object()
+{
+	Init();
+}
+
+Box::~Box()
+{
+
+}
+
+void Box::CreateFigure(GeometryGenerator::MeshData& kMeshData)
+{
+	GeometryGenerator geoGen;
+	geoGen.CreateBox(1.0f, 1.0f, 1.0f, kMeshData);
+}
+
+///////////////////////////////////////////////////////////////////////////
+Cylinder::Cylinder() : Object()
+{
+	Init();
+
+}
+
+Cylinder::~Cylinder()
+{
+
+}
+
+void Cylinder::CreateFigure(GeometryGenerator::MeshData& kMeshData)
+{
+	GeometryGenerator geoGen;
+	geoGen.CreateCylinder(0.5f, 0.5f, 1.0f, 8, 1, kMeshData);
+}
+
+///////////////////////////////////////////////////////////////////////////
+Sphere::Sphere() : Object()
+{
+	Init();
+}
+
+Sphere::~Sphere()
+{
+
+}
+
+void Sphere::CreateFigure(GeometryGenerator::MeshData& kMeshData)
+{
+	GeometryGenerator geoGen;
+	geoGen.CreateSphere(0.5f, 10, 10, kMeshData);
+}
+
+///////////////////////////////////////////////////////////////////////////
+Grid::Grid() : Object()
+{
+	Init();
+
+	m_AxisAlignedBox.Center = m_vPosition;
+	m_AxisAlignedBox.Extents = XMFLOAT3(0.0f, 0.0f, 0.0f);
+}
+
+Grid::~Grid()
+{
+
+}
+
+void Grid::CreateFigure(GeometryGenerator::MeshData& kMeshData)
+{
+	GeometryGenerator geoGen;
+	XMFLOAT4 color = DEFINE::COLOR_GRAY;
+	geoGen.CreateGrid(30.0f, 30.0f, 30, 30, kMeshData);
 }

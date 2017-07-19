@@ -13,8 +13,8 @@ namespace DEFINE
 	{
 		F_GRID,
 		F_BOX,
-		F_SPHERE,
 		F_CYLINDER,
+		F_SPHERE,
 		MAX_FIGURE_TYPE
 	};
 }

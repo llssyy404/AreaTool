@@ -20,19 +20,20 @@ public:
 	void OnMouseLDown(WPARAM wParam, int x, int y);
 	void OnMouseRDown(WPARAM wParam, int x, int y);
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
-	bool OnProcessingKeyboardMessage(ID3D11Device *&pd3dDevice, HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, float fTimeElapsed);
+	bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, float fTimeElapsed);
 
-	void CreateObjects(ID3D11Device *&pd3dDevice);
+	void CreateObjects();
 	void ReleaseObjects();
 
 	bool ProcessInput(float timeElapsed, HWND hwnd);
 	void AnimateObjects(float fTimeElapsed) {}
-	void Render(ID3D11DeviceContext*&pd3dDeviceContext, float fTimeElapsed);
+	void Render(float fTimeElapsed);
 
 private:
 	typedef std::shared_ptr<Object> SP_Object;
+	std::shared_ptr<Object> m_spkGrid;
 	std::list<SP_Object> m_listObject;
-	std::shared_ptr<Object> m_spSelectObject;
+	std::shared_ptr<Object> m_spkSelectObject;
 	POINT	m_poLastMousePos;
 	CHANGE_TYPE m_kChangeType;
 };
