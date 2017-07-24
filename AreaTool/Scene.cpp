@@ -11,7 +11,7 @@
 Scene::Scene()
 {
 	m_spkSelectObject = NULL;
-	m_kChangeType = C_TRNAS;
+	m_eChangeType = DEFINE::C_TRNAS;
 }
 
 Scene::~Scene()
@@ -77,6 +77,8 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 
 		m_spkSelectObject = iter;
 		m_spkSelectObject->SetSelection(true);
+		m_spkGizmo->SetSelection(true);
+		m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
 	}
 	else
 	{
@@ -84,6 +86,7 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 			return;
 
 		m_spkSelectObject->SetSelection(false);
+		m_spkGizmo->SetSelection(false);
 		m_spkSelectObject = NULL;
 	}
 }
@@ -137,25 +140,25 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			m_listObject.push_back(std::shared_ptr<Sphere>(new Sphere()));
 			break;
 		case 'W':
-			m_kChangeType = C_TRNAS;
+			m_eChangeType = DEFINE::C_TRNAS;
 			break;
 		case 'E':
-			m_kChangeType = C_ROT;
+			m_eChangeType = DEFINE::C_ROT;
 			break;
 		case 'R':
-			m_kChangeType = C_SCALE;
+			m_eChangeType = DEFINE::C_SCALE;
 			break;
 		case 'T':
 		{
-			switch (m_kChangeType)
+			switch (m_eChangeType)
 			{
-			case C_TRNAS:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Forward(1.f);
+			case DEFINE::C_TRNAS:
+				if (NULL != m_spkSelectObject) { m_spkSelectObject->Forward(1.f); m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition()); }
 				break;
-			case C_ROT:
+			case DEFINE::C_ROT:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->Roll(10.f);
 				break;
-			case C_SCALE:
+			case DEFINE::C_SCALE:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingZ(1.f);
 				break;
 			default:
@@ -164,15 +167,15 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 		}break;
 		case 'G':
 		{
-			switch (m_kChangeType)
+			switch (m_eChangeType)
 			{
-			case C_TRNAS:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Forward(-1.f);
+			case DEFINE::C_TRNAS:
+				if (NULL != m_spkSelectObject) { m_spkSelectObject->Forward(-1.f);  m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition()); }
 				break;
-			case C_ROT:
+			case DEFINE::C_ROT:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->Roll(-10.f);
 				break;
-			case C_SCALE:
+			case DEFINE::C_SCALE:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingZ(-1.f);
 				break;
 			default:
@@ -181,15 +184,17 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 		}break;
 		case 'H':
 		{
-			switch (m_kChangeType)
+			switch (m_eChangeType)
 			{
-			case C_TRNAS:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Right(1.f);
+			case DEFINE::C_TRNAS:
+				if (NULL != m_spkSelectObject) {
+					m_spkSelectObject->Right(1.f);  m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+				}
 				break;
-			case C_ROT:
+			case DEFINE::C_ROT:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->Pitch(10.f);
 				break;
-			case C_SCALE:
+			case DEFINE::C_SCALE:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingX(1.f);
 				break;
 			default:
@@ -198,15 +203,17 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 		}break;
 		case 'F':
 		{
-			switch (m_kChangeType)
+			switch (m_eChangeType)
 			{
-			case C_TRNAS:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Right(-1.f);
+			case DEFINE::C_TRNAS:
+				if (NULL != m_spkSelectObject) {
+					m_spkSelectObject->Right(-1.f);  m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+				}
 				break;
-			case C_ROT:
+			case DEFINE::C_ROT:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->Pitch(-10.f);
 				break;
-			case C_SCALE:
+			case DEFINE::C_SCALE:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingX(-1.f);
 				break;
 			default:
@@ -215,15 +222,17 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 		}break;
 		case 'Y':
 		{
-			switch (m_kChangeType)
+			switch (m_eChangeType)
 			{
-			case C_TRNAS:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Up(1.f);
+			case DEFINE::C_TRNAS:
+				if (NULL != m_spkSelectObject) {
+					m_spkSelectObject->Up(1.f);  m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+				}
 				break;
-			case C_ROT:
+			case DEFINE::C_ROT:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->Yaw(10.f);
 				break;
-			case C_SCALE:
+			case DEFINE::C_SCALE:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingY(1.f);
 				break;
 			default:
@@ -232,15 +241,17 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 		}break;
 		case 'V':
 		{
-			switch (m_kChangeType)
+			switch (m_eChangeType)
 			{
-			case C_TRNAS:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Up(-1.f);
+			case DEFINE::C_TRNAS:
+				if (NULL != m_spkSelectObject) {
+					m_spkSelectObject->Up(-1.f); m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+				}
 				break;
-			case C_ROT:
+			case DEFINE::C_ROT:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->Yaw(-10.f);
 				break;
-			case C_SCALE:
+			case DEFINE::C_SCALE:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingY(-1.f);
 				break;
 			default:
@@ -263,6 +274,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 void Scene::CreateObjects()
 {
 	m_spkGrid = std::shared_ptr<Object>(new Grid());
+	m_spkGizmo = std::shared_ptr<Object>(new Gizmo());
 }
 
 void Scene::ReleaseObjects()
@@ -275,10 +287,18 @@ bool Scene::ProcessInput(float timeElapsed, HWND hwnd)
 	return(false);
 }
 
+void Scene::AnimateObjects(float fTimeElapsed)
+{
+	for (auto obj : m_listObject)
+		obj->AnimateObjects(fTimeElapsed);
+	if (m_spkGizmo) m_spkGizmo->AnimateObjects(fTimeElapsed);
+}
+
 void Scene::Render(float fTimeElapsed)
 {
-	m_spkGrid->Render();
-
 	for (auto obj : m_listObject)
 		obj->Render();
+
+	if(m_spkGizmo) m_spkGizmo->Render();
+	if(m_spkGrid) m_spkGrid->Render();
 }

@@ -139,12 +139,14 @@ void ToolFramework::Render()
 {
 	m_kTimer.Tick();
 
+	if (m_pkScene) m_pkScene->AnimateObjects(m_kTimer.GetTimeElapsed());
+
 	float ClearColor[4] = { 0.5f, 0.7f, 1.f, 1.0f }; // red,green,blue,alpha
 	DeviceManager::GetInstance().GetDeviceContext()->ClearRenderTargetView(DeviceManager::GetInstance().GetRenderTargetView(), ClearColor);
 	DeviceManager::GetInstance().GetDeviceContext()->ClearDepthStencilView(DeviceManager::GetInstance().GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// object render
-	m_pkScene->Render(m_kTimer.GetTimeElapsed());
+	if (m_pkScene) m_pkScene->Render(m_kTimer.GetTimeElapsed());
 	Camera::GetInstance().UpdateViewMatrix();
 
 	//

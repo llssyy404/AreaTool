@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Define.h"
 #include "xnacollision.h"
 #include "GeometryGenerator.h"
 
@@ -29,8 +30,8 @@ public:
 	HRESULT		CreatePixelShader();
 	HRESULT		CreateInputLayout(ID3DBlob * &pVSBlob);
 	HRESULT		CreateVertexShader(ID3DBlob * &pVSBlob);
-	virtual	void CreateFigure(GeometryGenerator::MeshData& kMeshData) = 0;
-	void		BuildGeometryBuffers();
+	virtual	void	CreateFigure(GeometryGenerator::MeshData& kMeshData) = 0;
+	virtual void	BuildGeometryBuffers();
 	void		CreateIndexBuffer(const std::vector<UINT> &indices);
 	void		CreateVertexBuffer(const std::vector<SimpleVertex> &vertices);
 
@@ -45,13 +46,16 @@ public:
 	virtual void		ScalingY(float size);
 	virtual void		ScalingZ(float size);
 
+	XMFLOAT3	GetPosition() const { return m_vPosition; }
 	XMFLOAT3	GetRight() const { return m_vRight; }
 	XMFLOAT3	GetUp() const { return m_vUp; }
 	XMFLOAT3    GetLook() const { return m_vLook; }
 	XNA::AxisAlignedBox GetAABB() const { return m_AxisAlignedBox; }
+	void		SetPosition(XMFLOAT3 vPosition) { m_vPosition = vPosition; }
 	void		SetSelection(bool sel) { m_bSelect = sel; }
 
-	void		Render();
+	virtual void	AnimateObjects(float fTimeElapsed);
+	virtual void	Render();
 
 protected:
 	XMFLOAT3 m_vRight;
@@ -111,4 +115,18 @@ public:
 	Grid();
 	virtual ~Grid();
 	virtual void CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
+};
+
+class Gizmo : public Object
+{
+public:
+	Gizmo();
+	virtual ~Gizmo();
+	virtual void	CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
+	virtual void	BuildGeometryBuffers() override;
+	virtual void	Render();
+
+private:
+	UINT m_uiIndexCountCone;
+	DEFINE::CHANGE_TYPE m_eChangeType;
 };

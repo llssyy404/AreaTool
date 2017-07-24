@@ -277,19 +277,16 @@ void Object::WorldMatrixSRT()
 void Object::Pitch(float fAngle)
 {
 	m_f3Rotation.x += fAngle;
-	WorldMatrixSRT();
 }
 
 void Object::Yaw(float fAngle)
 {
 	m_f3Rotation.y += fAngle;
-	WorldMatrixSRT();
 }
 
 void Object::Roll(float fAngle)
 {
 	m_f3Rotation.z += fAngle;
-	WorldMatrixSRT();
 }
 
 void Object::Right(float d)
@@ -298,8 +295,6 @@ void Object::Right(float d)
 	XMVECTOR r = XMLoadFloat3(&m_vRight);
 	XMVECTOR position = XMLoadFloat3(&m_vPosition);
 	XMStoreFloat3(&m_vPosition, XMVectorMultiplyAdd(s, r, position));
-
-	WorldMatrixSRT();
 }
 
 void Object::Forward(float d)
@@ -308,8 +303,6 @@ void Object::Forward(float d)
 	XMVECTOR l = XMLoadFloat3(&m_vLook);
 	XMVECTOR position = XMLoadFloat3(&m_vPosition);
 	XMStoreFloat3(&m_vPosition, XMVectorMultiplyAdd(s, l, position));
-
-	WorldMatrixSRT();
 }
 
 void Object::Up(float d)
@@ -318,8 +311,6 @@ void Object::Up(float d)
 	XMVECTOR u = XMLoadFloat3(&m_vUp);
 	XMVECTOR position = XMLoadFloat3(&m_vPosition);
 	XMStoreFloat3(&m_vPosition, XMVectorMultiplyAdd(s, u, position));
-
-	WorldMatrixSRT();
 }
 
 void Object::ScalingX(float size)
@@ -328,7 +319,6 @@ void Object::ScalingX(float size)
 		return;
 
 	m_f3Scale.x += size;
-	WorldMatrixSRT();
 }
 
 void Object::ScalingY(float size)
@@ -337,7 +327,6 @@ void Object::ScalingY(float size)
 		return;
 
 	m_f3Scale.y += size;
-	WorldMatrixSRT();
 }
 
 void Object::ScalingZ(float size)
@@ -346,6 +335,10 @@ void Object::ScalingZ(float size)
 		return;
 
 	m_f3Scale.z += size;
+}
+
+void Object::AnimateObjects(float fTimeElapsed)
+{
 	WorldMatrixSRT();
 }
 
@@ -446,4 +439,169 @@ void Grid::CreateFigure(GeometryGenerator::MeshData& kMeshData)
 	GeometryGenerator geoGen;
 	XMFLOAT4 color = DEFINE::COLOR_GRAY;
 	geoGen.CreateGrid(30.0f, 30.0f, 30, 30, kMeshData);
+}
+
+///////////////////////////////////////////////////////////////////////////
+Gizmo::Gizmo() : Object()
+{
+	Init();
+	m_eChangeType = DEFINE::C_TRNAS;
+}
+
+Gizmo::~Gizmo()
+{
+
+}
+
+void Gizmo::CreateFigure(GeometryGenerator::MeshData& kMeshData)
+{
+
+}
+
+void Gizmo::BuildGeometryBuffers()
+{
+	GeometryGenerator::MeshData objectX;
+	GeometryGenerator::MeshData objectY;
+	GeometryGenerator::MeshData objectZ;
+	GeometryGenerator::MeshData coneX;
+	GeometryGenerator::MeshData coneY;
+	GeometryGenerator::MeshData coneZ;
+
+	GeometryGenerator geoGen;
+
+	geoGen.CreateBox(2.0f, 0.05f, 0.05f, objectX);
+	geoGen.CreateBox(0.05f, 2.0f, 0.05f, objectY);
+	geoGen.CreateBox(0.05f, 0.05f, 2.0f, objectZ);
+
+	geoGen.CreateCylinder(0.1f, 0.0f, 0.5f, 6, 1, coneX);
+	geoGen.CreateCylinder(0.1f, 0.0f, 0.5f, 6, 1, coneY);
+	geoGen.CreateCylinder(0.1f, 0.0f, 0.5f, 6, 1, coneZ);
+
+	for (int i = 0; i < objectX.Vertices.size(); ++i)
+	{
+		objectX.Vertices[i].Position.x += 1.0f;
+	}
+
+	for (int i = 0; i < objectY.Vertices.size(); ++i)
+	{
+		objectY.Vertices[i].Position.y += 1.0f;
+	}
+
+	for (int i = 0; i < objectZ.Vertices.size(); ++i)
+	{
+		objectZ.Vertices[i].Position.z += 1.0f;
+	}
+
+	for (int i = 0; i < coneX.Vertices.size(); ++i)
+	{
+		XMMATRIX rot = XMMatrixRotationRollPitchYaw(0, 0, XMConvertToRadians(-90.f));
+		XMVECTOR v = XMLoadFloat3(&coneX.Vertices[i].Position);
+		v = XMVector3Rotate(v, XMQuaternionRotationMatrix(rot));
+
+		XMStoreFloat3(&coneX.Vertices[i].Position, v);
+		coneX.Vertices[i].Position.x += 2.0f;
+	}
+
+	for (int i = 0; i < coneY.Vertices.size(); ++i)
+	{
+		coneY.Vertices[i].Position.y += 2.0f;
+	}
+	for (int i = 0; i < coneZ.Vertices.size(); ++i)
+	{
+		XMMATRIX rot = XMMatrixRotationRollPitchYaw(XMConvertToRadians(90.f), 0, 0);
+		XMVECTOR v = XMLoadFloat3(&coneZ.Vertices[i].Position);
+		v = XMVector3Rotate(v, XMQuaternionRotationMatrix(rot));
+
+		XMStoreFloat3(&coneZ.Vertices[i].Position, v);
+		coneZ.Vertices[i].Position.z += 2.0f;
+	}
+
+	m_iVertexOffset = 0; 
+	m_uiIndexCount = static_cast<UINT>(objectX.Indices.size());
+	m_uiIndexCountCone = static_cast<UINT>(coneX.Indices.size());
+	m_uiIndexOffset = 0;
+
+	std::vector<SimpleVertex> vertices(objectX.Vertices.size()+ objectY.Vertices.size()+ objectZ.Vertices.size()+coneX.Vertices.size() + coneY.Vertices.size() + coneZ.Vertices.size());
+	int count = 0;
+	for (size_t i = 0; i < objectX.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = objectX.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_RED;
+	}
+
+	for (size_t i = 0; i < objectY.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = objectY.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_GREEN;
+	}
+
+	for (size_t i = 0; i < objectZ.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = objectZ.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_BLUE;
+	}
+
+
+	for (size_t i = 0; i < coneX.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = coneX.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_RED;
+	}
+	
+	for (size_t i = 0; i < coneY.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = coneY.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_GREEN;
+	}
+
+	for (size_t i = 0; i < coneZ.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = coneZ.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_BLUE;
+	}
+
+	std::vector<UINT> indices;
+	indices.insert(indices.end(), objectX.Indices.begin(), objectX.Indices.end());
+	indices.insert(indices.end(), objectY.Indices.begin(), objectY.Indices.end());
+	indices.insert(indices.end(), objectZ.Indices.begin(), objectZ.Indices.end());
+	indices.insert(indices.end(), coneX.Indices.begin(), coneX.Indices.end());
+	indices.insert(indices.end(), coneY.Indices.begin(), coneY.Indices.end());
+	indices.insert(indices.end(), coneZ.Indices.begin(), coneZ.Indices.end());
+
+	CreateVertexBuffer(vertices);
+	CreateIndexBuffer(indices);
+}
+
+void Gizmo::Render()
+{
+	if (!m_bSelect)
+		return;
+
+	ConstantBuffer cb;
+	cb.m_mtWorld = XMMatrixTranspose(m_World);
+	cb.m_mtView = XMMatrixTranspose(Camera::GetInstance().View());
+	cb.m_mtProjection = XMMatrixTranspose(Camera::GetInstance().Proj());
+	DeviceManager::GetInstance().GetDeviceContext()->UpdateSubresource(m_pConstantBuffer, 0, NULL, &cb, 0, 0);
+
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	DeviceManager::GetInstance().GetDeviceContext()->IASetInputLayout(m_pVertexLayout);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	DeviceManager::GetInstance().GetDeviceContext()->RSSetState(m_pRasterizerStateSolid);
+	DeviceManager::GetInstance().GetDeviceContext()->VSSetShader(m_pVertexShader, NULL, 0);
+	DeviceManager::GetInstance().GetDeviceContext()->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
+	DeviceManager::GetInstance().GetDeviceContext()->PSSetShader(m_pPixelShader, NULL, 0);
+
+	if (DEFINE::C_TRNAS == m_eChangeType)
+	{
+		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexOffset, m_iVertexOffset);
+		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexCount, 24);
+		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexCount * 2, 48);
+		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount * 3, 72);
+		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount * 3 + m_uiIndexCountCone, 102);
+		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount * 3 + m_uiIndexCountCone * 2, 132);
+	}
 }
