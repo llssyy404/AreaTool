@@ -442,55 +442,33 @@ void Grid::CreateFigure(GeometryGenerator::MeshData& kMeshData)
 }
 
 ///////////////////////////////////////////////////////////////////////////
-Gizmo::Gizmo() : Object()
+TransGizmo::TransGizmo() : Gizmo()
 {
 	Init();
 	m_eChangeType = DEFINE::C_TRNAS;
 }
 
-Gizmo::~Gizmo()
+TransGizmo::~TransGizmo()
 {
 
 }
 
-void Gizmo::CreateFigure(GeometryGenerator::MeshData& kMeshData)
+void TransGizmo::CreateFigure(GeometryGenerator::MeshData& kMeshData)
 {
 
 }
 
-void Gizmo::BuildGeometryBuffers()
+void TransGizmo::BuildGeometryBuffers()
 {
-	GeometryGenerator::MeshData objectX;
-	GeometryGenerator::MeshData objectY;
-	GeometryGenerator::MeshData objectZ;
 	GeometryGenerator::MeshData coneX;
 	GeometryGenerator::MeshData coneY;
 	GeometryGenerator::MeshData coneZ;
 
 	GeometryGenerator geoGen;
 
-	geoGen.CreateBox(2.0f, 0.05f, 0.05f, objectX);
-	geoGen.CreateBox(0.05f, 2.0f, 0.05f, objectY);
-	geoGen.CreateBox(0.05f, 0.05f, 2.0f, objectZ);
-
-	geoGen.CreateCylinder(0.1f, 0.0f, 0.5f, 6, 1, coneX);
-	geoGen.CreateCylinder(0.1f, 0.0f, 0.5f, 6, 1, coneY);
-	geoGen.CreateCylinder(0.1f, 0.0f, 0.5f, 6, 1, coneZ);
-
-	for (int i = 0; i < objectX.Vertices.size(); ++i)
-	{
-		objectX.Vertices[i].Position.x += 1.0f;
-	}
-
-	for (int i = 0; i < objectY.Vertices.size(); ++i)
-	{
-		objectY.Vertices[i].Position.y += 1.0f;
-	}
-
-	for (int i = 0; i < objectZ.Vertices.size(); ++i)
-	{
-		objectZ.Vertices[i].Position.z += 1.0f;
-	}
+	geoGen.CreateCylinder(0.06f, 0.0f, 0.2f, 6, 1, coneX);
+	geoGen.CreateCylinder(0.06f, 0.0f, 0.2f, 6, 1, coneY);
+	geoGen.CreateCylinder(0.06f, 0.0f, 0.2f, 6, 1, coneZ);
 
 	for (int i = 0; i < coneX.Vertices.size(); ++i)
 	{
@@ -499,12 +477,12 @@ void Gizmo::BuildGeometryBuffers()
 		v = XMVector3Rotate(v, XMQuaternionRotationMatrix(rot));
 
 		XMStoreFloat3(&coneX.Vertices[i].Position, v);
-		coneX.Vertices[i].Position.x += 2.0f;
+		coneX.Vertices[i].Position.x += 1.0f;
 	}
 
 	for (int i = 0; i < coneY.Vertices.size(); ++i)
 	{
-		coneY.Vertices[i].Position.y += 2.0f;
+		coneY.Vertices[i].Position.y += 1.0f;
 	}
 	for (int i = 0; i < coneZ.Vertices.size(); ++i)
 	{
@@ -513,34 +491,24 @@ void Gizmo::BuildGeometryBuffers()
 		v = XMVector3Rotate(v, XMQuaternionRotationMatrix(rot));
 
 		XMStoreFloat3(&coneZ.Vertices[i].Position, v);
-		coneZ.Vertices[i].Position.z += 2.0f;
+		coneZ.Vertices[i].Position.z += 1.0f;
 	}
 
+	const int vertexCount = 6;
+	std::vector<SimpleVertex> vertices(vertexCount + coneX.Vertices.size() + coneY.Vertices.size() + coneZ.Vertices.size());
+
 	m_iVertexOffset = 0; 
-	m_uiIndexCount = static_cast<UINT>(objectX.Indices.size());
+	m_uiIndexCount = static_cast<UINT>(vertexCount);
 	m_uiIndexCountCone = static_cast<UINT>(coneX.Indices.size());
 	m_uiIndexOffset = 0;
 
-	std::vector<SimpleVertex> vertices(objectX.Vertices.size()+ objectY.Vertices.size()+ objectZ.Vertices.size()+coneX.Vertices.size() + coneY.Vertices.size() + coneZ.Vertices.size());
 	int count = 0;
-	for (size_t i = 0; i < objectX.Vertices.size(); ++i, ++count)
-	{
-		vertices[count].m_f3Pos = objectX.Vertices[i].Position;
-		vertices[count].m_f4Color = DEFINE::COLOR_RED;
-	}
-
-	for (size_t i = 0; i < objectY.Vertices.size(); ++i, ++count)
-	{
-		vertices[count].m_f3Pos = objectY.Vertices[i].Position;
-		vertices[count].m_f4Color = DEFINE::COLOR_GREEN;
-	}
-
-	for (size_t i = 0; i < objectZ.Vertices.size(); ++i, ++count)
-	{
-		vertices[count].m_f3Pos = objectZ.Vertices[i].Position;
-		vertices[count].m_f4Color = DEFINE::COLOR_BLUE;
-	}
-
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_RED;
+	vertices[count].m_f3Pos.x = 1.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_RED;
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 1.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 1.f; vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
 
 	for (size_t i = 0; i < coneX.Vertices.size(); ++i, ++count)
 	{
@@ -560,10 +528,10 @@ void Gizmo::BuildGeometryBuffers()
 		vertices[count].m_f4Color = DEFINE::COLOR_BLUE;
 	}
 
-	std::vector<UINT> indices;
-	indices.insert(indices.end(), objectX.Indices.begin(), objectX.Indices.end());
-	indices.insert(indices.end(), objectY.Indices.begin(), objectY.Indices.end());
-	indices.insert(indices.end(), objectZ.Indices.begin(), objectZ.Indices.end());
+	std::vector<UINT> indices(vertexCount);
+	for (int i = 0; i < vertexCount; ++i)
+		indices[i] = i;
+
 	indices.insert(indices.end(), coneX.Indices.begin(), coneX.Indices.end());
 	indices.insert(indices.end(), coneY.Indices.begin(), coneY.Indices.end());
 	indices.insert(indices.end(), coneZ.Indices.begin(), coneZ.Indices.end());
@@ -572,11 +540,8 @@ void Gizmo::BuildGeometryBuffers()
 	CreateIndexBuffer(indices);
 }
 
-void Gizmo::Render()
+void TransGizmo::Render()
 {
-	if (!m_bSelect)
-		return;
-
 	ConstantBuffer cb;
 	cb.m_mtWorld = XMMatrixTranspose(m_World);
 	cb.m_mtView = XMMatrixTranspose(Camera::GetInstance().View());
@@ -588,7 +553,6 @@ void Gizmo::Render()
 	DeviceManager::GetInstance().GetDeviceContext()->IASetInputLayout(m_pVertexLayout);
 	DeviceManager::GetInstance().GetDeviceContext()->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 	DeviceManager::GetInstance().GetDeviceContext()->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	DeviceManager::GetInstance().GetDeviceContext()->RSSetState(m_pRasterizerStateSolid);
 	DeviceManager::GetInstance().GetDeviceContext()->VSSetShader(m_pVertexShader, NULL, 0);
@@ -597,11 +561,250 @@ void Gizmo::Render()
 
 	if (DEFINE::C_TRNAS == m_eChangeType)
 	{
+		DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexOffset, m_iVertexOffset);
-		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexCount, 24);
-		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexCount * 2, 48);
-		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount * 3, 72);
-		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount * 3 + m_uiIndexCountCone, 102);
-		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount * 3 + m_uiIndexCountCone * 2, 132);
+		DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount, 6);
+		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount + m_uiIndexCountCone, 6+30);
+		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount + m_uiIndexCountCone * 2, 6+60);
 	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+RotationGizmo::RotationGizmo()
+{
+	Init();
+}
+
+RotationGizmo::~RotationGizmo()
+{
+
+}
+
+void	RotationGizmo::CreateFigure(GeometryGenerator::MeshData& kMeshData)
+{
+
+}
+
+void	RotationGizmo::BuildGeometryBuffers() 
+{
+	const int slice = 10;
+	std::vector<SimpleVertex> vertices((360 / slice+1)*3);
+	std::vector<UINT> indices((360 / slice + 1) * 3);
+	int count = 0;
+	for (int i = 0; i * slice <= 360; ++i, ++count)
+	{
+		vertices[count].m_f3Pos.y = cosf(XMConvertToRadians(static_cast<float>(i * slice)));
+		vertices[count].m_f3Pos.z = sinf(XMConvertToRadians(static_cast<float>(i * slice)));
+		vertices[count].m_f4Color = DEFINE::COLOR_RED;
+		indices[count] = i;
+	}
+	
+	for (int i = 0; i * slice <= 360; ++i, ++count)
+	{
+		vertices[count].m_f3Pos.x = cosf(XMConvertToRadians(static_cast<float>(i * slice)));
+		vertices[count].m_f3Pos.z = sinf(XMConvertToRadians(static_cast<float>(i * slice)));
+		vertices[count].m_f4Color = DEFINE::COLOR_GREEN;
+		indices[count] = i;
+	}
+
+	for (int i = 0; i * slice <= 360; ++i, ++count)
+	{
+		vertices[count].m_f3Pos.x = cosf(XMConvertToRadians(static_cast<float>(i * slice)));
+		vertices[count].m_f3Pos.y = sinf(XMConvertToRadians(static_cast<float>(i * slice)));
+		vertices[count].m_f4Color = DEFINE::COLOR_BLUE;
+		indices[count] = i;
+	}
+
+	m_iVertexOffset = 0;
+	m_uiIndexCount = static_cast<UINT>(indices.size()/3);
+	m_uiIndexOffset = 0;
+
+	CreateVertexBuffer(vertices);
+	CreateIndexBuffer(indices);
+}
+
+void	RotationGizmo::Render()
+{
+	ConstantBuffer cb;
+	cb.m_mtWorld = XMMatrixTranspose(m_World);
+	cb.m_mtView = XMMatrixTranspose(Camera::GetInstance().View());
+	cb.m_mtProjection = XMMatrixTranspose(Camera::GetInstance().Proj());
+	DeviceManager::GetInstance().GetDeviceContext()->UpdateSubresource(m_pConstantBuffer, 0, NULL, &cb, 0, 0);
+
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	DeviceManager::GetInstance().GetDeviceContext()->IASetInputLayout(m_pVertexLayout);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+
+	DeviceManager::GetInstance().GetDeviceContext()->RSSetState(m_pRasterizerStateSolid);
+	DeviceManager::GetInstance().GetDeviceContext()->VSSetShader(m_pVertexShader, NULL, 0);
+	DeviceManager::GetInstance().GetDeviceContext()->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
+	DeviceManager::GetInstance().GetDeviceContext()->PSSetShader(m_pPixelShader, NULL, 0);
+
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexOffset, m_iVertexOffset);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexCount, m_uiIndexCount);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexCount * 2, m_uiIndexCount*2);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+ScalingGizmo::ScalingGizmo()
+{
+	Init();
+}
+
+ScalingGizmo::~ScalingGizmo()
+{
+
+}
+
+void	ScalingGizmo::CreateFigure(GeometryGenerator::MeshData& kMeshData)
+{
+
+}
+
+void	ScalingGizmo::BuildGeometryBuffers()
+{
+	GeometryGenerator::MeshData objectX;
+	GeometryGenerator::MeshData objectY;
+	GeometryGenerator::MeshData objectZ;
+	GeometryGenerator::MeshData objectCenter;
+
+	GeometryGenerator geoGen;
+
+	geoGen.CreateBox(0.1f, 0.1f, 0.1f, objectX);
+	geoGen.CreateBox(0.1f, 0.1f, 0.1f, objectY);
+	geoGen.CreateBox(0.1f, 0.1f, 0.1f, objectZ);
+	geoGen.CreateBox(0.1f, 0.1f, 0.1f, objectCenter);
+
+	for (int i = 0; i < objectX.Vertices.size(); ++i)
+	{
+		objectX.Vertices[i].Position.x += 1.0f;
+	}
+
+	for (int i = 0; i < objectY.Vertices.size(); ++i)
+	{
+		objectY.Vertices[i].Position.y += 1.0f;
+	}
+
+	for (int i = 0; i < objectZ.Vertices.size(); ++i)
+	{
+		objectZ.Vertices[i].Position.z += 1.0f;
+	}
+
+	const int vertexCount = 6;
+	std::vector<SimpleVertex> vertices(vertexCount+ objectX.Vertices.size() + objectY.Vertices.size() + objectZ.Vertices.size() + objectCenter.Vertices.size());
+	int count = 0;
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_RED;
+	vertices[count].m_f3Pos.x = 1.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_RED;
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 1.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
+	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 1.f; vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
+
+	for (size_t i = 0; i < objectX.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = objectX.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_RED;
+	}
+
+	for (size_t i = 0; i < objectY.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = objectY.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_GREEN;
+	}
+
+	for (size_t i = 0; i < objectZ.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = objectZ.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_BLUE;
+	}
+
+	for (size_t i = 0; i < objectCenter.Vertices.size(); ++i, ++count)
+	{
+		vertices[count].m_f3Pos = objectCenter.Vertices[i].Position;
+		vertices[count].m_f4Color = DEFINE::COLOR_YELLOW;
+	}
+
+	std::vector<UINT> indices(vertexCount);
+	for (int i = 0; i < vertexCount; ++i)
+		indices[i] = i;
+
+	indices.insert(indices.end(), objectX.Indices.begin(), objectX.Indices.end());
+	indices.insert(indices.end(), objectY.Indices.begin(), objectY.Indices.end());
+	indices.insert(indices.end(), objectZ.Indices.begin(), objectZ.Indices.end());
+	indices.insert(indices.end(), objectCenter.Indices.begin(), objectCenter.Indices.end());
+
+	m_iVertexOffset = 0;
+	m_uiIndexCount = 36;
+	m_uiIndexOffset = 0;
+
+	std::cout << m_uiIndexCount << std::endl;
+	CreateVertexBuffer(vertices);
+	CreateIndexBuffer(indices);
+}
+
+void	ScalingGizmo::Render()
+{
+	ConstantBuffer cb;
+	cb.m_mtWorld = XMMatrixTranspose(m_World);
+	cb.m_mtView = XMMatrixTranspose(Camera::GetInstance().View());
+	cb.m_mtProjection = XMMatrixTranspose(Camera::GetInstance().Proj());
+	DeviceManager::GetInstance().GetDeviceContext()->UpdateSubresource(m_pConstantBuffer, 0, NULL, &cb, 0, 0);
+
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	DeviceManager::GetInstance().GetDeviceContext()->IASetInputLayout(m_pVertexLayout);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+
+	DeviceManager::GetInstance().GetDeviceContext()->RSSetState(m_pRasterizerStateSolid);
+	DeviceManager::GetInstance().GetDeviceContext()->VSSetShader(m_pVertexShader, NULL, 0);
+	DeviceManager::GetInstance().GetDeviceContext()->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
+	DeviceManager::GetInstance().GetDeviceContext()->PSSetShader(m_pPixelShader, NULL, 0);
+
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(6, m_uiIndexOffset, m_iVertexOffset);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6, 6);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6 + m_uiIndexCount, 30);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6 + m_uiIndexCount * 2, 54);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6 + m_uiIndexCount * 3, 78);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+GizmoManager::GizmoManager()
+{
+	m_bSelectGiszmo = false;
+	m_vecGizmo.push_back(std::shared_ptr<Gizmo>(new TransGizmo()));
+	m_vecGizmo.push_back(std::shared_ptr<Gizmo>(new RotationGizmo()));
+	m_vecGizmo.push_back(std::shared_ptr<Gizmo>(new ScalingGizmo()));
+}
+
+GizmoManager::~GizmoManager()
+{
+
+}
+
+void GizmoManager::SetSelection(DEFINE::CHANGE_TYPE eChangeType, bool bSelection)
+{
+	m_bSelectGiszmo = bSelection;
+}
+
+void GizmoManager::AnimateObjects(DEFINE::CHANGE_TYPE eChangeType, float fTimeElapsed)
+{
+	if (!m_bSelectGiszmo)
+		return;
+
+	m_vecGizmo[static_cast<int>(eChangeType)]->AnimateObjects(fTimeElapsed);
+}
+
+void GizmoManager::Render(DEFINE::CHANGE_TYPE eChangeType)
+{
+	if (!m_bSelectGiszmo)
+		return;
+
+	m_vecGizmo[static_cast<int>(eChangeType)]->Render();
 }

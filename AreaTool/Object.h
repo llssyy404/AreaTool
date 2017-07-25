@@ -120,13 +120,57 @@ public:
 class Gizmo : public Object
 {
 public:
-	Gizmo();
-	virtual ~Gizmo();
+	Gizmo() : Object() {}
+	virtual ~Gizmo() {}
+	virtual void	CreateFigure(GeometryGenerator::MeshData& kMeshData) override = 0;
+	virtual void	BuildGeometryBuffers() override = 0;
+	virtual void	Render() override = 0;
+};
+
+class TransGizmo : public Gizmo
+{
+public:
+	TransGizmo();
+	virtual ~TransGizmo();
 	virtual void	CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
 	virtual void	BuildGeometryBuffers() override;
-	virtual void	Render();
+	virtual void	Render() override;
 
 private:
 	UINT m_uiIndexCountCone;
 	DEFINE::CHANGE_TYPE m_eChangeType;
+};
+
+class RotationGizmo : public Gizmo
+{
+public:
+	RotationGizmo();
+	virtual ~RotationGizmo();
+	virtual void	CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
+	virtual void	BuildGeometryBuffers() override;
+	virtual void	Render() override;
+};
+
+class ScalingGizmo : public Gizmo
+{
+public:
+	ScalingGizmo();
+	virtual ~ScalingGizmo();
+	virtual void	CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
+	virtual void	BuildGeometryBuffers() override;
+	virtual void	Render() override;
+};
+
+class GizmoManager
+{
+public:
+	GizmoManager();
+	~GizmoManager();
+	void SetSelection(DEFINE::CHANGE_TYPE eChangeType, bool bSelection);
+	void AnimateObjects(DEFINE::CHANGE_TYPE eChangeType, float fTimeElapsed);
+	void Render(DEFINE::CHANGE_TYPE eChangeType);
+
+private:
+	std::vector<std::shared_ptr<Gizmo>> m_vecGizmo;
+	bool m_bSelectGiszmo;
 };

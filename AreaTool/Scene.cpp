@@ -16,6 +16,7 @@ Scene::Scene()
 
 Scene::~Scene()
 {
+	if(m_spkSelectObject) m_spkSelectObject = NULL;
 }
 
 void Scene::OnMouseMove(WPARAM wParam, int x, int y)
@@ -77,8 +78,8 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 
 		m_spkSelectObject = iter;
 		m_spkSelectObject->SetSelection(true);
-		m_spkGizmo->SetSelection(true);
-		m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+		m_spkGizmoManager->SetSelection(m_eChangeType, true);
+		//m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
 	}
 	else
 	{
@@ -86,7 +87,7 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 			return;
 
 		m_spkSelectObject->SetSelection(false);
-		m_spkGizmo->SetSelection(false);
+		m_spkGizmoManager->SetSelection(m_eChangeType, false);
 		m_spkSelectObject = NULL;
 	}
 }
@@ -153,7 +154,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_eChangeType)
 			{
 			case DEFINE::C_TRNAS:
-				if (NULL != m_spkSelectObject) { m_spkSelectObject->Forward(1.f); m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition()); }
+				if (NULL != m_spkSelectObject) { m_spkSelectObject->Forward(1.f);}
 				break;
 			case DEFINE::C_ROT:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->Roll(10.f);
@@ -170,7 +171,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_eChangeType)
 			{
 			case DEFINE::C_TRNAS:
-				if (NULL != m_spkSelectObject) { m_spkSelectObject->Forward(-1.f);  m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition()); }
+				if (NULL != m_spkSelectObject) { m_spkSelectObject->Forward(-1.f);}
 				break;
 			case DEFINE::C_ROT:
 				if (NULL != m_spkSelectObject) m_spkSelectObject->Roll(-10.f);
@@ -188,7 +189,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			{
 			case DEFINE::C_TRNAS:
 				if (NULL != m_spkSelectObject) {
-					m_spkSelectObject->Right(1.f);  m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+					m_spkSelectObject->Right(1.f);
 				}
 				break;
 			case DEFINE::C_ROT:
@@ -207,7 +208,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			{
 			case DEFINE::C_TRNAS:
 				if (NULL != m_spkSelectObject) {
-					m_spkSelectObject->Right(-1.f);  m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+					m_spkSelectObject->Right(-1.f);
 				}
 				break;
 			case DEFINE::C_ROT:
@@ -226,7 +227,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			{
 			case DEFINE::C_TRNAS:
 				if (NULL != m_spkSelectObject) {
-					m_spkSelectObject->Up(1.f);  m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+					m_spkSelectObject->Up(1.f);
 				}
 				break;
 			case DEFINE::C_ROT:
@@ -245,7 +246,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			{
 			case DEFINE::C_TRNAS:
 				if (NULL != m_spkSelectObject) {
-					m_spkSelectObject->Up(-1.f); m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+					m_spkSelectObject->Up(-1.f); 
 				}
 				break;
 			case DEFINE::C_ROT:
@@ -274,7 +275,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 void Scene::CreateObjects()
 {
 	m_spkGrid = std::shared_ptr<Object>(new Grid());
-	m_spkGizmo = std::shared_ptr<Object>(new Gizmo());
+	m_spkGizmoManager = std::shared_ptr<GizmoManager>(new GizmoManager);
 }
 
 void Scene::ReleaseObjects()
@@ -291,7 +292,8 @@ void Scene::AnimateObjects(float fTimeElapsed)
 {
 	for (auto obj : m_listObject)
 		obj->AnimateObjects(fTimeElapsed);
-	if (m_spkGizmo) m_spkGizmo->AnimateObjects(fTimeElapsed);
+
+	m_spkGizmoManager->AnimateObjects(m_eChangeType, fTimeElapsed);
 }
 
 void Scene::Render(float fTimeElapsed)
@@ -299,6 +301,6 @@ void Scene::Render(float fTimeElapsed)
 	for (auto obj : m_listObject)
 		obj->Render();
 
-	if(m_spkGizmo) m_spkGizmo->Render();
+	m_spkGizmoManager->Render(m_eChangeType);
 	if(m_spkGrid) m_spkGrid->Render();
 }
