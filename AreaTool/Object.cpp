@@ -445,7 +445,6 @@ void Grid::CreateFigure(GeometryGenerator::MeshData& kMeshData)
 TransGizmo::TransGizmo() : Gizmo()
 {
 	Init();
-	m_eChangeType = DEFINE::C_TRNAS;
 }
 
 TransGizmo::~TransGizmo()
@@ -503,12 +502,12 @@ void TransGizmo::BuildGeometryBuffers()
 	m_uiIndexOffset = 0;
 
 	int count = 0;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_RED;
-	vertices[count].m_f3Pos.x = 1.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_RED;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 1.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 1.f; vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 0.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_RED;
+	vertices[count].m_f3Pos = XMFLOAT3(1.0f, 0.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_RED;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 0.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 1.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 0.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 0.0f, 1.0f); vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
 
 	for (size_t i = 0; i < coneX.Vertices.size(); ++i, ++count)
 	{
@@ -559,15 +558,12 @@ void TransGizmo::Render()
 	DeviceManager::GetInstance().GetDeviceContext()->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
 	DeviceManager::GetInstance().GetDeviceContext()->PSSetShader(m_pPixelShader, NULL, 0);
 
-	if (DEFINE::C_TRNAS == m_eChangeType)
-	{
-		DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexOffset, m_iVertexOffset);
-		DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount, 6);
-		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount + m_uiIndexCountCone, 6+30);
-		DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount + m_uiIndexCountCone * 2, 6+60);
-	}
+	DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, m_uiIndexOffset, m_iVertexOffset);
+	DeviceManager::GetInstance().GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount, 6);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount + m_uiIndexCountCone, 6 + 30);
+	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount + m_uiIndexCountCone * 2, 6 + 60);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -697,12 +693,12 @@ void	ScalingGizmo::BuildGeometryBuffers()
 	const int vertexCount = 6;
 	std::vector<SimpleVertex> vertices(vertexCount+ objectX.Vertices.size() + objectY.Vertices.size() + objectZ.Vertices.size() + objectCenter.Vertices.size());
 	int count = 0;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_RED;
-	vertices[count].m_f3Pos.x = 1.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_RED;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 1.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 0.f; vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
-	vertices[count].m_f3Pos.x = 0.f; vertices[count].m_f3Pos.y = 0.f; vertices[count].m_f3Pos.z = 1.f; vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 0.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_RED;
+	vertices[count].m_f3Pos = XMFLOAT3(1.0f, 0.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_RED;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 0.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 1.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_GREEN;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 0.0f, 0.0f); vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
+	vertices[count].m_f3Pos = XMFLOAT3(0.0f, 0.0f, 1.0f); vertices[count++].m_f4Color = DEFINE::COLOR_BLUE;
 
 	for (size_t i = 0; i < objectX.Vertices.size(); ++i, ++count)
 	{

@@ -138,7 +138,6 @@ public:
 
 private:
 	UINT m_uiIndexCountCone;
-	DEFINE::CHANGE_TYPE m_eChangeType;
 };
 
 class RotationGizmo : public Gizmo

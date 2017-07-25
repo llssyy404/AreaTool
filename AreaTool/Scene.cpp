@@ -78,7 +78,7 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 
 		m_spkSelectObject = iter;
 		m_spkSelectObject->SetSelection(true);
-		m_spkGizmoManager->SetSelection(m_eChangeType, true);
+		if(m_spkGizmoManager) m_spkGizmoManager->SetSelection(m_eChangeType, true);
 		//m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
 	}
 	else
@@ -87,7 +87,7 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 			return;
 
 		m_spkSelectObject->SetSelection(false);
-		m_spkGizmoManager->SetSelection(m_eChangeType, false);
+		if(m_spkGizmoManager) m_spkGizmoManager->SetSelection(m_eChangeType, false);
 		m_spkSelectObject = NULL;
 	}
 }
@@ -293,7 +293,7 @@ void Scene::AnimateObjects(float fTimeElapsed)
 	for (auto obj : m_listObject)
 		obj->AnimateObjects(fTimeElapsed);
 
-	m_spkGizmoManager->AnimateObjects(m_eChangeType, fTimeElapsed);
+	if(m_spkGizmoManager) m_spkGizmoManager->AnimateObjects(m_eChangeType, fTimeElapsed);
 }
 
 void Scene::Render(float fTimeElapsed)
@@ -301,6 +301,6 @@ void Scene::Render(float fTimeElapsed)
 	for (auto obj : m_listObject)
 		obj->Render();
 
-	m_spkGizmoManager->Render(m_eChangeType);
+	if(m_spkGizmoManager) m_spkGizmoManager->Render(m_eChangeType);
 	if(m_spkGrid) m_spkGrid->Render();
 }
