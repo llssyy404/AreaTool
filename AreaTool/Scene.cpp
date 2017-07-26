@@ -2,6 +2,8 @@
 #include "Define.h"
 #include "DeviceManager.h"
 #include "Camera.h"
+#include "GizmoManager.h"
+#include "Gizmo.h"
 #include "Object.h"
 #include "xnacollision.h"
 
@@ -11,7 +13,7 @@
 Scene::Scene()
 {
 	m_spkSelectObject = nullptr;
-	m_eChangeType = DEFINE::C_ROT;
+	m_eChangeType = DEFINE::C_TRNAS;
 }
 
 Scene::~Scene()
@@ -236,7 +238,7 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 		case VK_DELETE:
 		{
 			if (nullptr == m_spkSelectObject)
-				return;
+				return false;
 
 			m_listObject.remove(m_spkSelectObject);
 			m_spkSelectObject = nullptr;
