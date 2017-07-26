@@ -235,11 +235,11 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			break;
 		case VK_DELETE:
 		{
-			if (nullptr != m_spkSelectObject)
-			{
-				m_listObject.remove(m_spkSelectObject);
-				m_spkSelectObject = nullptr;
-			}
+			if (nullptr == m_spkSelectObject)
+				return;
+
+			m_listObject.remove(m_spkSelectObject);
+			m_spkSelectObject = nullptr;
 		}break;
 		case '1':
 			m_listObject.push_back(std::shared_ptr<Box>(new Box()));
@@ -259,116 +259,6 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 		case 'R':
 			m_eChangeType = DEFINE::C_SCALE;
 			break;
-		case 'T':
-		{
-			switch (m_eChangeType)
-			{
-			case DEFINE::C_TRNAS:
-				if (nullptr != m_spkSelectObject) { m_spkSelectObject->Forward(1.f);}
-				break;
-			case DEFINE::C_ROT:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->Roll(10.f);
-				break;
-			case DEFINE::C_SCALE:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingZ(1.f);
-				break;
-			default:
-				break;
-			}
-		}break;
-		case 'G':
-		{
-			switch (m_eChangeType)
-			{
-			case DEFINE::C_TRNAS:
-				if (nullptr != m_spkSelectObject) { m_spkSelectObject->Forward(-1.f);}
-				break;
-			case DEFINE::C_ROT:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->Roll(-10.f);
-				break;
-			case DEFINE::C_SCALE:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingZ(-1.f);
-				break;
-			default:
-				break;
-			}
-		}break;
-		case 'H':
-		{
-			switch (m_eChangeType)
-			{
-			case DEFINE::C_TRNAS:
-				if (nullptr != m_spkSelectObject) {
-					m_spkSelectObject->Right(1.f);
-				}
-				break;
-			case DEFINE::C_ROT:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->Pitch(10.f);
-				break;
-			case DEFINE::C_SCALE:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingX(1.f);
-				break;
-			default:
-				break;
-			}
-		}break;
-		case 'F':
-		{
-			switch (m_eChangeType)
-			{
-			case DEFINE::C_TRNAS:
-				if (nullptr != m_spkSelectObject) {
-					m_spkSelectObject->Right(-1.f);
-				}
-				break;
-			case DEFINE::C_ROT:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->Pitch(-10.f);
-				break;
-			case DEFINE::C_SCALE:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingX(-1.f);
-				break;
-			default:
-				break;
-			}
-		}break;
-		case 'Y':
-		{
-			switch (m_eChangeType)
-			{
-			case DEFINE::C_TRNAS:
-				if (nullptr != m_spkSelectObject) {
-					m_spkSelectObject->Up(1.f);
-				}
-				break;
-			case DEFINE::C_ROT:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->Yaw(10.f);
-				break;
-			case DEFINE::C_SCALE:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingY(1.f);
-				break;
-			default:
-				break;
-			}
-		}break;
-		case 'V':
-		{
-			switch (m_eChangeType)
-			{
-			case DEFINE::C_TRNAS:
-				if (nullptr != m_spkSelectObject) {
-					m_spkSelectObject->Up(-1.f); 
-				}
-				break;
-			case DEFINE::C_ROT:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->Yaw(-10.f);
-				break;
-			case DEFINE::C_SCALE:
-				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingY(-1.f);
-				break;
-			default:
-				break;
-			}
-		}break;
 		default:
 			break;
 		}
