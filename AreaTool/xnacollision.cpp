@@ -799,10 +799,10 @@ VOID TransformSphere( Sphere* pOut, const Sphere* pIn, FLOAT Scale, FXMVECTOR Ro
     Center = XMVector3Rotate( Center * XMVectorReplicate( Scale ), Rotation ) + Translation;
 
     // Store the center sphere.
-    XMStoreFloat3( &pOut->Center, Center );
+    XMStoreFloat3( &pOut->Center, Translation);
 
     // Scale the radius of the pshere.
-    pOut->Radius = pIn->Radius * Scale;
+    //pOut->Radius = pIn->Radius * Scale;
 
     return;
 }

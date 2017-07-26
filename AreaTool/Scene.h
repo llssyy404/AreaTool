@@ -27,10 +27,9 @@ public:
 private:
 	typedef std::shared_ptr<Object> SP_Object;
 	std::shared_ptr<GizmoManager> m_spkGizmoManager;
-	//std::shared_ptr<Object> m_spkGizmo;
 	std::list<SP_Object> m_listObject;
 	SP_Object m_spkGrid;
-	std::shared_ptr<Object> m_spkSelectObject;
+	SP_Object m_spkSelectObject;
 	POINT	m_poLastMousePos;
 	DEFINE::CHANGE_TYPE m_eChangeType;
 };

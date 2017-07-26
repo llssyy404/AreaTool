@@ -8,6 +8,15 @@
 
 Object::Object()
 {
+	m_pVertexShader = nullptr;
+	m_pPixelShader = nullptr;
+	m_pVertexLayout = nullptr;
+	m_pVertexBuffer = nullptr;
+	m_pIndexBuffer = nullptr;
+	m_pConstantBuffer = nullptr;
+	m_pRasterizerStateWire = nullptr;
+	m_pRasterizerStateSolid = nullptr;
+
 	m_bSelect = false;
 
 	m_f3Scale = XMFLOAT3(1.f, 1.f, 1.f);
@@ -37,7 +46,7 @@ Object::~Object()
 HRESULT Object::Init()
 {
 	HRESULT hr = S_OK;
-	ID3DBlob* pVSBlob = NULL;
+	ID3DBlob* pVSBlob = nullptr;
 	hr = CreateVertexShader(pVSBlob);
 	if (FAILED(hr))
 	{
@@ -289,28 +298,27 @@ void Object::Roll(float fAngle)
 	m_f3Rotation.z += fAngle;
 }
 
+void Object::Translate(float d, XMFLOAT3 f3Axis)
+{
+	XMVECTOR vDis = XMVectorReplicate(d);
+	XMVECTOR vAxis = XMLoadFloat3(&f3Axis);
+	XMVECTOR position = XMLoadFloat3(&m_vPosition);
+	XMStoreFloat3(&m_vPosition, XMVectorMultiplyAdd(vDis, vAxis, position));
+}
+
 void Object::Right(float d)
 {
-	XMVECTOR s = XMVectorReplicate(d);
-	XMVECTOR r = XMLoadFloat3(&m_vRight);
-	XMVECTOR position = XMLoadFloat3(&m_vPosition);
-	XMStoreFloat3(&m_vPosition, XMVectorMultiplyAdd(s, r, position));
+	Translate(d, m_vRight);
 }
 
 void Object::Forward(float d)
 {
-	XMVECTOR s = XMVectorReplicate(d);
-	XMVECTOR l = XMLoadFloat3(&m_vLook);
-	XMVECTOR position = XMLoadFloat3(&m_vPosition);
-	XMStoreFloat3(&m_vPosition, XMVectorMultiplyAdd(s, l, position));
+	Translate(d, m_vLook);
 }
 
 void Object::Up(float d)
 {
-	XMVECTOR s = XMVectorReplicate(d);
-	XMVECTOR u = XMLoadFloat3(&m_vUp);
-	XMVECTOR position = XMLoadFloat3(&m_vPosition);
-	XMStoreFloat3(&m_vPosition, XMVectorMultiplyAdd(s, u, position));
+	Translate(d, m_vUp);
 }
 
 void Object::ScalingX(float size)
@@ -445,6 +453,21 @@ void Grid::CreateFigure(GeometryGenerator::MeshData& kMeshData)
 TransGizmo::TransGizmo() : Gizmo()
 {
 	Init();
+
+	XMFLOAT3 posX = m_vPosition; posX.x += 0.5f;
+	m_AxisAlignedBoxX.Center = posX;
+	m_AxisAlignedBoxX.Extents = XMFLOAT3(0.5f, 0.05f, 0.05f);
+	m_AxisAlignedBoxX.Scale = XMFLOAT3(1.f, 1.f, 1.f);
+
+	XMFLOAT3 posY = m_vPosition; posY.y += 0.5f;
+	m_AxisAlignedBoxY.Center = posY;
+	m_AxisAlignedBoxY.Extents = XMFLOAT3(0.05f, 0.5f, 0.05f);
+	m_AxisAlignedBoxY.Scale = XMFLOAT3(1.f, 1.f, 1.f);
+
+	XMFLOAT3 posZ = m_vPosition; posZ.z += 0.5f;
+	m_AxisAlignedBoxZ.Center = posZ;
+	m_AxisAlignedBoxZ.Extents = XMFLOAT3(0.05f, 0.05f, 0.5f);
+	m_AxisAlignedBoxZ.Scale = XMFLOAT3(1.f, 1.f, 1.f);
 }
 
 TransGizmo::~TransGizmo()
@@ -483,6 +506,7 @@ void TransGizmo::BuildGeometryBuffers()
 	{
 		coneY.Vertices[i].Position.y += 1.0f;
 	}
+
 	for (int i = 0; i < coneZ.Vertices.size(); ++i)
 	{
 		XMMATRIX rot = XMMatrixRotationRollPitchYaw(XMConvertToRadians(90.f), 0, 0);
@@ -539,6 +563,19 @@ void TransGizmo::BuildGeometryBuffers()
 	CreateIndexBuffer(indices);
 }
 
+void TransGizmo::WorldMatrixSRT()
+{
+	XMMATRIX scale = XMMatrixScaling(m_f3Scale.x, m_f3Scale.y, m_f3Scale.z);
+	XMMATRIX rot = XMMatrixRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z));
+	XMMATRIX trans = XMMatrixTranslation(m_vPosition.x, m_vPosition.y, m_vPosition.z);
+	m_World = XMMatrixIdentity();
+	m_World = XMMatrixMultiply(XMMatrixMultiply(XMMatrixMultiply(m_World, scale), rot), trans);
+
+	TransformAxisAlignedBox(&m_AxisAlignedBoxX, &m_AxisAlignedBoxX, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x+0.5f, m_vPosition.y, m_vPosition.z)));
+	TransformAxisAlignedBox(&m_AxisAlignedBoxY, &m_AxisAlignedBoxY, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z)));
+	TransformAxisAlignedBox(&m_AxisAlignedBoxZ, &m_AxisAlignedBoxZ, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f)));
+}
+
 void TransGizmo::Render()
 {
 	ConstantBuffer cb;
@@ -570,6 +607,9 @@ void TransGizmo::Render()
 RotationGizmo::RotationGizmo()
 {
 	Init();
+
+	m_Sphere.Center = m_vPosition;
+	m_Sphere.Radius = 1.0f;
 }
 
 RotationGizmo::~RotationGizmo()
@@ -620,6 +660,17 @@ void	RotationGizmo::BuildGeometryBuffers()
 	CreateIndexBuffer(indices);
 }
 
+void RotationGizmo::WorldMatrixSRT()
+{
+	XMMATRIX scale = XMMatrixScaling(m_f3Scale.x, m_f3Scale.y, m_f3Scale.z);
+	XMMATRIX rot = XMMatrixRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z));
+	XMMATRIX trans = XMMatrixTranslation(m_vPosition.x, m_vPosition.y, m_vPosition.z);
+	m_World = XMMatrixIdentity();
+	m_World = XMMatrixMultiply(XMMatrixMultiply(XMMatrixMultiply(m_World, scale), rot), trans);
+
+	TransformSphere(&m_Sphere, &m_Sphere, m_f3Scale.x, XMQuaternionRotationMatrix(rot), XMLoadFloat3(&m_vPosition));
+}
+
 void	RotationGizmo::Render()
 {
 	ConstantBuffer cb;
@@ -649,6 +700,21 @@ void	RotationGizmo::Render()
 ScalingGizmo::ScalingGizmo()
 {
 	Init();
+
+	XMFLOAT3 posX = m_vPosition; posX.x += 0.5f;
+	m_AxisAlignedBoxX.Center = posX;
+	m_AxisAlignedBoxX.Extents = XMFLOAT3(0.5f, 0.05f, 0.05f);
+	m_AxisAlignedBoxX.Scale = XMFLOAT3(1.f, 1.f, 1.f);
+
+	XMFLOAT3 posY = m_vPosition; posY.y += 0.5f;
+	m_AxisAlignedBoxY.Center = posY;
+	m_AxisAlignedBoxY.Extents = XMFLOAT3(0.05f, 0.5f, 0.05f);
+	m_AxisAlignedBoxY.Scale = XMFLOAT3(1.f, 1.f, 1.f);
+
+	XMFLOAT3 posZ = m_vPosition; posZ.z += 0.5f;
+	m_AxisAlignedBoxZ.Center = posZ;
+	m_AxisAlignedBoxZ.Extents = XMFLOAT3(0.05f, 0.05f, 0.5f);
+	m_AxisAlignedBoxZ.Scale = XMFLOAT3(1.f, 1.f, 1.f);
 }
 
 ScalingGizmo::~ScalingGizmo()
@@ -742,6 +808,19 @@ void	ScalingGizmo::BuildGeometryBuffers()
 	CreateIndexBuffer(indices);
 }
 
+void ScalingGizmo::WorldMatrixSRT()
+{
+	XMMATRIX scale = XMMatrixScaling(m_f3Scale.x, m_f3Scale.y, m_f3Scale.z);
+	XMMATRIX rot = XMMatrixRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z));
+	XMMATRIX trans = XMMatrixTranslation(m_vPosition.x, m_vPosition.y, m_vPosition.z);
+	m_World = XMMatrixIdentity();
+	m_World = XMMatrixMultiply(XMMatrixMultiply(XMMatrixMultiply(m_World, scale), rot), trans);
+
+	TransformAxisAlignedBox(&m_AxisAlignedBoxX, &m_AxisAlignedBoxX, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x + 0.5f, m_vPosition.y, m_vPosition.z)));
+	TransformAxisAlignedBox(&m_AxisAlignedBoxY, &m_AxisAlignedBoxY, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z)));
+	TransformAxisAlignedBox(&m_AxisAlignedBoxZ, &m_AxisAlignedBoxZ, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f)));
+}
+
 void	ScalingGizmo::Render()
 {
 	ConstantBuffer cb;
@@ -774,19 +853,36 @@ void	ScalingGizmo::Render()
 GizmoManager::GizmoManager()
 {
 	m_bSelectGiszmo = false;
-	m_vecGizmo.push_back(std::shared_ptr<Gizmo>(new TransGizmo()));
-	m_vecGizmo.push_back(std::shared_ptr<Gizmo>(new RotationGizmo()));
-	m_vecGizmo.push_back(std::shared_ptr<Gizmo>(new ScalingGizmo()));
+	m_arrGizmo[DEFINE::C_TRNAS] = new TransGizmo();
+	m_arrGizmo[DEFINE::C_ROT] = new RotationGizmo();
+	m_arrGizmo[DEFINE::C_SCALE] = new ScalingGizmo();
+	m_spkSelectObject = nullptr;
 }
 
 GizmoManager::~GizmoManager()
 {
+	if(m_spkSelectObject) m_spkSelectObject = nullptr;
+	for (int i = 0; i < DEFINE::CHANGE_TYPE::MAX_CHANGE_TYPE; ++i)
+	{
+		delete m_arrGizmo[i];
+	}
+}
 
+Gizmo* GizmoManager::GetGizmo(DEFINE::CHANGE_TYPE eChangeType) const
+{ 
+	return m_arrGizmo[static_cast<int>(eChangeType)]; 
 }
 
 void GizmoManager::SetSelection(DEFINE::CHANGE_TYPE eChangeType, bool bSelection)
 {
 	m_bSelectGiszmo = bSelection;
+	if (!bSelection)
+		m_spkSelectObject = nullptr;
+}
+
+void GizmoManager::SetSelectObject(const std::shared_ptr<Object>& spkSelectObject)
+{
+	m_spkSelectObject = spkSelectObject;
 }
 
 void GizmoManager::AnimateObjects(DEFINE::CHANGE_TYPE eChangeType, float fTimeElapsed)
@@ -794,7 +890,8 @@ void GizmoManager::AnimateObjects(DEFINE::CHANGE_TYPE eChangeType, float fTimeEl
 	if (!m_bSelectGiszmo)
 		return;
 
-	m_vecGizmo[static_cast<int>(eChangeType)]->AnimateObjects(fTimeElapsed);
+	if(m_spkSelectObject) m_arrGizmo[static_cast<int>(eChangeType)]->SetPosition(m_spkSelectObject->GetPosition());
+	m_arrGizmo[static_cast<int>(eChangeType)]->AnimateObjects(fTimeElapsed);
 }
 
 void GizmoManager::Render(DEFINE::CHANGE_TYPE eChangeType)
@@ -802,5 +899,5 @@ void GizmoManager::Render(DEFINE::CHANGE_TYPE eChangeType)
 	if (!m_bSelectGiszmo)
 		return;
 
-	m_vecGizmo[static_cast<int>(eChangeType)]->Render();
+	m_arrGizmo[static_cast<int>(eChangeType)]->Render();
 }

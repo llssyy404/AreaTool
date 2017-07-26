@@ -35,10 +35,11 @@ public:
 	void		CreateIndexBuffer(const std::vector<UINT> &indices);
 	void		CreateVertexBuffer(const std::vector<SimpleVertex> &vertices);
 
-	void		WorldMatrixSRT();
+	virtual void		WorldMatrixSRT();
 	void		Pitch(float fAngle);
 	void		Yaw(float fAngle);
 	void		Roll(float fAngle);
+	void		Translate(float d, XMFLOAT3 vAxis);
 	void		Right(float d);
 	void		Forward(float d);
 	void		Up(float d);
@@ -124,6 +125,7 @@ public:
 	virtual ~Gizmo() {}
 	virtual void	CreateFigure(GeometryGenerator::MeshData& kMeshData) override = 0;
 	virtual void	BuildGeometryBuffers() override = 0;
+	virtual void	WorldMatrixSRT() override = 0;
 	virtual void	Render() override = 0;
 };
 
@@ -134,10 +136,18 @@ public:
 	virtual ~TransGizmo();
 	virtual void	CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
 	virtual void	BuildGeometryBuffers() override;
+	virtual void	WorldMatrixSRT() override;
 	virtual void	Render() override;
+
+	XNA::AxisAlignedBox GetAABBX() const { return m_AxisAlignedBoxX; }
+	XNA::AxisAlignedBox GetAABBY() const { return m_AxisAlignedBoxY; }
+	XNA::AxisAlignedBox GetAABBZ() const { return m_AxisAlignedBoxZ; }
 
 private:
 	UINT m_uiIndexCountCone;
+	XNA::AxisAlignedBox m_AxisAlignedBoxX;
+	XNA::AxisAlignedBox m_AxisAlignedBoxY;
+	XNA::AxisAlignedBox m_AxisAlignedBoxZ;
 };
 
 class RotationGizmo : public Gizmo
@@ -147,7 +157,13 @@ public:
 	virtual ~RotationGizmo();
 	virtual void	CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
 	virtual void	BuildGeometryBuffers() override;
+	virtual void	WorldMatrixSRT() override;
 	virtual void	Render() override;
+
+	XNA::Sphere GetSphere() const { return m_Sphere; }
+
+private:
+	XNA::Sphere m_Sphere;
 };
 
 class ScalingGizmo : public Gizmo
@@ -157,7 +173,17 @@ public:
 	virtual ~ScalingGizmo();
 	virtual void	CreateFigure(GeometryGenerator::MeshData& kMeshData) override;
 	virtual void	BuildGeometryBuffers() override;
+	virtual void	WorldMatrixSRT() override;
 	virtual void	Render() override;
+
+	XNA::AxisAlignedBox GetAABBX() const { return m_AxisAlignedBoxX; }
+	XNA::AxisAlignedBox GetAABBY() const { return m_AxisAlignedBoxY; }
+	XNA::AxisAlignedBox GetAABBZ() const { return m_AxisAlignedBoxZ; }
+
+private:
+	XNA::AxisAlignedBox m_AxisAlignedBoxX;
+	XNA::AxisAlignedBox m_AxisAlignedBoxY;
+	XNA::AxisAlignedBox m_AxisAlignedBoxZ;
 };
 
 class GizmoManager
@@ -165,11 +191,15 @@ class GizmoManager
 public:
 	GizmoManager();
 	~GizmoManager();
+	bool GetSelection() const { return m_bSelectGiszmo; }
+	Gizmo* GetGizmo(DEFINE::CHANGE_TYPE eChangeType) const { return m_arrGizmo[(int)eChangeType]; }
 	void SetSelection(DEFINE::CHANGE_TYPE eChangeType, bool bSelection);
+	void SetSelectObject(const std::shared_ptr<Object>& spkSelectObject);
 	void AnimateObjects(DEFINE::CHANGE_TYPE eChangeType, float fTimeElapsed);
 	void Render(DEFINE::CHANGE_TYPE eChangeType);
 
 private:
-	std::vector<std::shared_ptr<Gizmo>> m_vecGizmo;
+	Gizmo* m_arrGizmo[DEFINE::MAX_CHANGE_TYPE];
 	bool m_bSelectGiszmo;
+	std::shared_ptr<Object> m_spkSelectObject;
 };

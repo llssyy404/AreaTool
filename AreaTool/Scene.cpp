@@ -10,13 +10,24 @@
 
 Scene::Scene()
 {
-	m_spkSelectObject = NULL;
-	m_eChangeType = DEFINE::C_TRNAS;
+	m_spkSelectObject = nullptr;
+	m_eChangeType = DEFINE::C_ROT;
 }
 
 Scene::~Scene()
 {
-	if(m_spkSelectObject) m_spkSelectObject = NULL;
+	if(m_spkSelectObject) m_spkSelectObject = nullptr;
+}
+
+void Scene::CreateObjects()
+{
+	m_spkGrid = std::shared_ptr<Object>(new Grid());
+	m_spkGizmoManager = std::shared_ptr<GizmoManager>(new GizmoManager);
+}
+
+void Scene::ReleaseObjects()
+{
+	m_spkSelectObject = nullptr;
 }
 
 void Scene::OnMouseMove(WPARAM wParam, int x, int y)
@@ -29,6 +40,104 @@ void Scene::OnMouseMove(WPARAM wParam, int x, int y)
 		float dy = XMConvertToRadians(0.5f*static_cast<float>(y - m_poLastMousePos.y));
 		Camera::GetInstance().Pitch(dy);
 		Camera::GetInstance().RotateY(dx);
+	}
+	else if (0 != (wParam & MK_LBUTTON))
+	{
+		XMMATRIX P = Camera::GetInstance().Proj();
+		float vx = (+2.0f*x / DEFINE::SCREEN_WIDTH - 1.0f) / P(0, 0);
+		float vy = (-2.0f*y / DEFINE::SCREEN_HEIGHT + 1.0f) / P(1, 1);
+
+		XMVECTOR rayPos = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+		XMVECTOR rayDir = XMVectorSet(vx, vy, 1.0f, 0.0f);
+
+		XMMATRIX W = XMMatrixIdentity();
+		XMMATRIX V = Camera::GetInstance().View();
+		XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(V), V);
+		XMMATRIX invWorld = XMMatrixInverse(&XMMatrixDeterminant(W), W);
+		XMMATRIX toLocal = XMMatrixMultiply(invView, invWorld);
+
+		rayPos = XMVector3TransformCoord(rayPos, toLocal);
+		rayDir = XMVector3TransformNormal(rayDir, toLocal);
+		rayDir = XMVector3Normalize(rayDir);
+
+		float fDist = 9999.f;
+		float dx = XMConvertToRadians(0.5f*static_cast<float>(x - m_poLastMousePos.x));
+		float dy = XMConvertToRadians(0.5f*static_cast<float>(y - m_poLastMousePos.y));
+		if (m_spkGizmoManager->GetSelection())
+		{
+			switch (m_eChangeType)
+			{
+			case DEFINE::C_TRNAS:
+			{
+				TransGizmo* transGizmo = dynamic_cast<TransGizmo*>(m_spkGizmoManager->GetGizmo(m_eChangeType));
+				if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &transGizmo->GetAABBX(), &fDist))
+				{
+					std::cout << "X축선택" << std::endl;
+					if (nullptr != m_spkSelectObject) {
+						m_spkSelectObject->Right(dx); transGizmo->SetPosition(m_spkSelectObject->GetPosition());
+					}
+				}
+				else if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &transGizmo->GetAABBY(), &fDist))
+				{
+					std::cout << "Y축선택" << std::endl;
+					if (nullptr != m_spkSelectObject) {
+						m_spkSelectObject->Up(-dy); transGizmo->SetPosition(m_spkSelectObject->GetPosition());
+					}
+				}
+				else if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &transGizmo->GetAABBZ(), &fDist))
+				{
+					std::cout << "Z축선택" << std::endl;
+					if (nullptr != m_spkSelectObject) {
+						m_spkSelectObject->Forward(dx); transGizmo->SetPosition(m_spkSelectObject->GetPosition());
+					}
+				}
+			}
+				break;
+			case DEFINE::C_ROT:
+			{
+				RotationGizmo* rotateGizmo = dynamic_cast<RotationGizmo*>(m_spkGizmoManager->GetGizmo(m_eChangeType));
+				if (TRUE == IntersectRaySphere(rayPos, rayDir, &rotateGizmo->GetSphere(), &fDist))
+				{
+					std::cout << "구충돌체 선택" << std::endl;
+					if (nullptr != m_spkSelectObject) {
+						m_spkSelectObject->Roll(-dy * 50);
+					}
+				}
+			}
+				break;
+			case DEFINE::C_SCALE:
+			{
+				ScalingGizmo* scaleGizmo = dynamic_cast<ScalingGizmo*>(m_spkGizmoManager->GetGizmo(m_eChangeType));
+				if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &scaleGizmo->GetAABBX(), &fDist))
+				{
+					std::cout << "X축선택" << std::endl;
+					if (nullptr != m_spkSelectObject) {
+						m_spkSelectObject->ScalingX(dx);
+					}
+				}
+				else if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &scaleGizmo->GetAABBY(), &fDist))
+				{
+					std::cout << "Y축선택" << std::endl;
+					if (nullptr != m_spkSelectObject) {
+						m_spkSelectObject->ScalingY(-dy);
+					}
+				}
+				else if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &scaleGizmo->GetAABBZ(), &fDist))
+				{
+					std::cout << "Z축선택" << std::endl;
+					if (nullptr != m_spkSelectObject) {
+						m_spkSelectObject->ScalingZ(dx);
+					}
+				}
+			}
+				break;
+			case DEFINE::MAX_CHANGE_TYPE:
+				std::cout << "Invalid Change Type: " << m_eChangeType << std::endl;
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	m_poLastMousePos.x = x;
@@ -57,7 +166,8 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 	bool bPick = false;
 	float fDist = 9999.f;
 	float fMin = 9999.f;
-	SP_Object iter = NULL;
+	SP_Object iter = nullptr;
+
 	for (auto obj : m_listObject)
 	{
 		if (false == IntersectRayAxisAlignedBox(rayPos, rayDir, &obj->GetAABB(), &fDist))	// 도형 선택
@@ -73,22 +183,22 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 
 	if (bPick)
 	{
-		if (NULL != m_spkSelectObject)
+		if (nullptr != m_spkSelectObject)
 			m_spkSelectObject->SetSelection(false);
 
 		m_spkSelectObject = iter;
 		m_spkSelectObject->SetSelection(true);
 		if(m_spkGizmoManager) m_spkGizmoManager->SetSelection(m_eChangeType, true);
-		//m_spkGizmo->SetPosition(m_spkSelectObject->GetPosition());
+		if (m_spkGizmoManager) m_spkGizmoManager->SetSelectObject(m_spkSelectObject);
 	}
 	else
 	{
-		if (NULL == m_spkSelectObject)
+		if (nullptr == m_spkSelectObject)
 			return;
 
 		m_spkSelectObject->SetSelection(false);
 		if(m_spkGizmoManager) m_spkGizmoManager->SetSelection(m_eChangeType, false);
-		m_spkSelectObject = NULL;
+		m_spkSelectObject = nullptr;
 	}
 }
 
@@ -125,10 +235,10 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			break;
 		case VK_DELETE:
 		{
-			if (NULL != m_spkSelectObject)
+			if (nullptr != m_spkSelectObject)
 			{
 				m_listObject.remove(m_spkSelectObject);
-				m_spkSelectObject = NULL;
+				m_spkSelectObject = nullptr;
 			}
 		}break;
 		case '1':
@@ -154,13 +264,13 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_eChangeType)
 			{
 			case DEFINE::C_TRNAS:
-				if (NULL != m_spkSelectObject) { m_spkSelectObject->Forward(1.f);}
+				if (nullptr != m_spkSelectObject) { m_spkSelectObject->Forward(1.f);}
 				break;
 			case DEFINE::C_ROT:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Roll(10.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->Roll(10.f);
 				break;
 			case DEFINE::C_SCALE:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingZ(1.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingZ(1.f);
 				break;
 			default:
 				break;
@@ -171,13 +281,13 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_eChangeType)
 			{
 			case DEFINE::C_TRNAS:
-				if (NULL != m_spkSelectObject) { m_spkSelectObject->Forward(-1.f);}
+				if (nullptr != m_spkSelectObject) { m_spkSelectObject->Forward(-1.f);}
 				break;
 			case DEFINE::C_ROT:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Roll(-10.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->Roll(-10.f);
 				break;
 			case DEFINE::C_SCALE:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingZ(-1.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingZ(-1.f);
 				break;
 			default:
 				break;
@@ -188,15 +298,15 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_eChangeType)
 			{
 			case DEFINE::C_TRNAS:
-				if (NULL != m_spkSelectObject) {
+				if (nullptr != m_spkSelectObject) {
 					m_spkSelectObject->Right(1.f);
 				}
 				break;
 			case DEFINE::C_ROT:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Pitch(10.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->Pitch(10.f);
 				break;
 			case DEFINE::C_SCALE:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingX(1.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingX(1.f);
 				break;
 			default:
 				break;
@@ -207,15 +317,15 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_eChangeType)
 			{
 			case DEFINE::C_TRNAS:
-				if (NULL != m_spkSelectObject) {
+				if (nullptr != m_spkSelectObject) {
 					m_spkSelectObject->Right(-1.f);
 				}
 				break;
 			case DEFINE::C_ROT:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Pitch(-10.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->Pitch(-10.f);
 				break;
 			case DEFINE::C_SCALE:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingX(-1.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingX(-1.f);
 				break;
 			default:
 				break;
@@ -226,15 +336,15 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_eChangeType)
 			{
 			case DEFINE::C_TRNAS:
-				if (NULL != m_spkSelectObject) {
+				if (nullptr != m_spkSelectObject) {
 					m_spkSelectObject->Up(1.f);
 				}
 				break;
 			case DEFINE::C_ROT:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Yaw(10.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->Yaw(10.f);
 				break;
 			case DEFINE::C_SCALE:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingY(1.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingY(1.f);
 				break;
 			default:
 				break;
@@ -245,15 +355,15 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 			switch (m_eChangeType)
 			{
 			case DEFINE::C_TRNAS:
-				if (NULL != m_spkSelectObject) {
+				if (nullptr != m_spkSelectObject) {
 					m_spkSelectObject->Up(-1.f); 
 				}
 				break;
 			case DEFINE::C_ROT:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->Yaw(-10.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->Yaw(-10.f);
 				break;
 			case DEFINE::C_SCALE:
-				if (NULL != m_spkSelectObject) m_spkSelectObject->ScalingY(-1.f);
+				if (nullptr != m_spkSelectObject) m_spkSelectObject->ScalingY(-1.f);
 				break;
 			default:
 				break;
@@ -270,17 +380,6 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 	}
 
 	return(false);
-}
-
-void Scene::CreateObjects()
-{
-	m_spkGrid = std::shared_ptr<Object>(new Grid());
-	m_spkGizmoManager = std::shared_ptr<GizmoManager>(new GizmoManager);
-}
-
-void Scene::ReleaseObjects()
-{
-	m_spkSelectObject = NULL;
 }
 
 bool Scene::ProcessInput(float timeElapsed, HWND hwnd)
