@@ -11,14 +11,14 @@ public:
 	Scene();
 	~Scene();
 
+	void CreateObjects();
+	void ReleaseObjects();
+
 	void OnMouseMove(WPARAM wParam, int x, int y);
 	void OnMouseLDown(WPARAM wParam, int x, int y);
 	void OnMouseRDown(WPARAM wParam, int x, int y);
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, float fTimeElapsed);
-
-	void CreateObjects();
-	void ReleaseObjects();
 
 	bool ProcessInput(float timeElapsed, HWND hwnd);
 	void AnimateObjects(float fTimeElapsed);
