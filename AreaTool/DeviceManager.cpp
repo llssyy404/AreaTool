@@ -2,18 +2,18 @@
 #include "Define.h"
 #include "DeviceManager.h"
 
-DeviceManager* DeviceManager::m_pkInstance = NULL;
+DeviceManager* DeviceManager::m_pkInstance = nullptr;
 
 DeviceManager::DeviceManager()
 {
 	m_driverType = D3D_DRIVER_TYPE_NULL;
 	m_featureLevel = D3D_FEATURE_LEVEL_11_0;
-	m_pd3dDevice = NULL;
-	m_pd3dDeviceContext = NULL;
-	m_pSwapChain = NULL;
-	m_pRenderTargetView = NULL;
-	m_pd3dDepthStencilBuffer = NULL;
-	m_pd3dDepthStencilView = NULL;
+	m_pd3dDevice = nullptr;
+	m_pd3dDeviceContext = nullptr;
+	m_pSwapChain = nullptr;
+	m_pRenderTargetView = nullptr;
+	m_pd3dDepthStencilBuffer = nullptr;
+	m_pd3dDepthStencilView = nullptr;
 }
 
 DeviceManager::~DeviceManager()

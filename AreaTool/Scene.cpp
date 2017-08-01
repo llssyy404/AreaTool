@@ -32,6 +32,26 @@ void Scene::ReleaseObjects()
 	m_spkSelectObject = nullptr;
 }
 
+void Scene::GetRayPosAndDir(int x, int y, XMVECTOR& rayPos, XMVECTOR& rayDir)
+{
+	XMMATRIX P = Camera::GetInstance().Proj();
+	float vx = (+2.0f*x / DEFINE::SCREEN_WIDTH - 1.0f) / P(0, 0);
+	float vy = (-2.0f*y / DEFINE::SCREEN_HEIGHT + 1.0f) / P(1, 1);
+
+	rayPos = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+	rayDir = XMVectorSet(vx, vy, 1.0f, 0.0f);
+
+	XMMATRIX W = XMMatrixIdentity();
+	XMMATRIX V = Camera::GetInstance().View();
+	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(V), V);
+	XMMATRIX invWorld = XMMatrixInverse(&XMMatrixDeterminant(W), W);
+	XMMATRIX toLocal = XMMatrixMultiply(invView, invWorld);
+
+	rayPos = XMVector3TransformCoord(rayPos, toLocal);
+	rayDir = XMVector3TransformNormal(rayDir, toLocal);
+	rayDir = XMVector3Normalize(rayDir);
+}
+
 void Scene::OnMouseMove(WPARAM wParam, int x, int y)
 {
 	if (0 != (wParam & MK_RBUTTON))
@@ -45,22 +65,8 @@ void Scene::OnMouseMove(WPARAM wParam, int x, int y)
 	}
 	else if (0 != (wParam & MK_LBUTTON))
 	{
-		XMMATRIX P = Camera::GetInstance().Proj();
-		float vx = (+2.0f*x / DEFINE::SCREEN_WIDTH - 1.0f) / P(0, 0);
-		float vy = (-2.0f*y / DEFINE::SCREEN_HEIGHT + 1.0f) / P(1, 1);
-
-		XMVECTOR rayPos = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-		XMVECTOR rayDir = XMVectorSet(vx, vy, 1.0f, 0.0f);
-
-		XMMATRIX W = XMMatrixIdentity();
-		XMMATRIX V = Camera::GetInstance().View();
-		XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(V), V);
-		XMMATRIX invWorld = XMMatrixInverse(&XMMatrixDeterminant(W), W);
-		XMMATRIX toLocal = XMMatrixMultiply(invView, invWorld);
-
-		rayPos = XMVector3TransformCoord(rayPos, toLocal);
-		rayDir = XMVector3TransformNormal(rayDir, toLocal);
-		rayDir = XMVector3Normalize(rayDir);
+		XMVECTOR rayPos; XMVECTOR rayDir;
+		GetRayPosAndDir(x, y, rayPos, rayDir);
 
 		float fDist = 9999.f;
 		float dx = XMConvertToRadians(0.5f*static_cast<float>(x - m_poLastMousePos.x));
@@ -148,22 +154,8 @@ void Scene::OnMouseMove(WPARAM wParam, int x, int y)
 
 void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 {
-	XMMATRIX P = Camera::GetInstance().Proj();
-	float vx = (+2.0f*x / DEFINE::SCREEN_WIDTH - 1.0f) / P(0, 0);
-	float vy = (-2.0f*y / DEFINE::SCREEN_HEIGHT + 1.0f) / P(1, 1);
-
-	XMVECTOR rayPos = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-	XMVECTOR rayDir = XMVectorSet(vx, vy, 1.0f, 0.0f);
-
-	XMMATRIX W = XMMatrixIdentity();
-	XMMATRIX V = Camera::GetInstance().View();
-	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(V), V);
-	XMMATRIX invWorld = XMMatrixInverse(&XMMatrixDeterminant(W), W);
-	XMMATRIX toLocal = XMMatrixMultiply(invView, invWorld);
-
-	rayPos = XMVector3TransformCoord(rayPos, toLocal);
-	rayDir = XMVector3TransformNormal(rayDir, toLocal);
-	rayDir = XMVector3Normalize(rayDir);
+	XMVECTOR rayPos; XMVECTOR rayDir;
+	GetRayPosAndDir(x, y, rayPos, rayDir);
 
 	bool bPick = false;
 	float fDist = 9999.f;

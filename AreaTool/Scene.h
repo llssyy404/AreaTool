@@ -14,6 +14,8 @@ public:
 	void CreateObjects();
 	void ReleaseObjects();
 
+	void GetRayPosAndDir(int x, int y, XMVECTOR& rayPos, XMVECTOR& rayDir);
+
 	void OnMouseMove(WPARAM wParam, int x, int y);
 	void OnMouseLDown(WPARAM wParam, int x, int y);
 	void OnMouseRDown(WPARAM wParam, int x, int y);
