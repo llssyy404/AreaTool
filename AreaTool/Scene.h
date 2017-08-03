@@ -15,7 +15,12 @@ public:
 	void ReleaseObjects();
 
 	void GetRayPosAndDir(int x, int y, XMVECTOR& rayPos, XMVECTOR& rayDir);
+	void TransformSelectObject(const XMVECTOR &rayPos, const XMVECTOR &rayDir, float &fDist, float dx, float dy);
+	void RotateSelectObject(const XMVECTOR &rayPos, const XMVECTOR &rayDir, float &fDist, float dx, float dy);
+	void ScaleSelectObject(const XMVECTOR &rayPos, const XMVECTOR &rayDir, float &fDist, float dx, float dy);
 
+	void OnMouseMoveRightBtn(int x, int y);
+	void OnMouseMoveLeftBtn(int x, int y);
 	void OnMouseMove(WPARAM wParam, int x, int y);
 	void OnMouseLDown(WPARAM wParam, int x, int y);
 	void OnMouseRDown(WPARAM wParam, int x, int y);
