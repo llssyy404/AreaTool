@@ -130,10 +130,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
-	//case WM_LBUTTONUP:
-	//	break;
-	//case WM_RBUTTONUP:
-	//	break;
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MOUSEMOVE:

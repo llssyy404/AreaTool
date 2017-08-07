@@ -18,6 +18,8 @@ public:
 	void	OnMouseMove(WPARAM wParam, int x, int y);
 	void	OnMouseLDown(WPARAM wParam, int x, int y);
 	void	OnMouseRDown(WPARAM wParam, int x, int y);
+	void	OnMouseLUp(WPARAM wParam, int x, int y);
+	void	OnMouseRUp(WPARAM wParam, int x, int y);
 	void	OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	void	OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);

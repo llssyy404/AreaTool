@@ -2,6 +2,13 @@
 
 #include "Define.h"
 
+enum SELECT_EXIS
+{
+	SEL_X,
+	SEL_Y,
+	SEL_Z
+};
+
 class Object;
 class GizmoManager;
 
@@ -24,6 +31,8 @@ public:
 	void OnMouseMove(WPARAM wParam, int x, int y);
 	void OnMouseLDown(WPARAM wParam, int x, int y);
 	void OnMouseRDown(WPARAM wParam, int x, int y);
+	void OnMouseLUp(WPARAM wParam, int x, int y);
+	void OnMouseRUp(WPARAM wParam, int x, int y);
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, float fTimeElapsed);
 
@@ -39,4 +48,6 @@ private:
 	SP_Object m_spkSelectObject;
 	POINT	m_poLastMousePos;
 	DEFINE::CHANGE_TYPE m_eChangeType;
+	bool m_bSelectGizmo;
+	SELECT_EXIS m_eSelectExis;
 };

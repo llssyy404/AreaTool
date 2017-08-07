@@ -14,6 +14,7 @@ Scene::Scene()
 {
 	m_spkSelectObject = nullptr;
 	m_eChangeType = DEFINE::C_TRNAS;
+	m_bSelectGizmo = false;
 }
 
 Scene::~Scene()
@@ -147,6 +148,9 @@ void Scene::OnMouseMoveRightBtn(int x, int y)
 
 void Scene::OnMouseMoveLeftBtn(int x, int y)
 {
+	if (!m_bSelectGizmo)
+		return;
+
 	XMVECTOR rayPos; XMVECTOR rayDir;
 	GetRayPosAndDir(x, y, rayPos, rayDir);
 
@@ -158,13 +162,77 @@ void Scene::OnMouseMoveLeftBtn(int x, int y)
 		switch (m_eChangeType)
 		{
 		case DEFINE::C_TRNAS:
-			TransformSelectObject(rayPos, rayDir, fDist, dx, dy);
+			//TransformSelectObject(rayPos, rayDir, fDist, dx, dy);
+		{
+			TransGizmo* transGizmo = dynamic_cast<TransGizmo*>(m_spkGizmoManager->GetGizmo(m_eChangeType));
+			switch (m_eSelectExis)
+			{
+			case SEL_X:
+			{
+				if (nullptr != m_spkSelectObject) {
+					m_spkSelectObject->Right(dx); transGizmo->SetPosition(m_spkSelectObject->GetPosition());
+				}
+			}
+				break;
+			case SEL_Y:
+			{
+				if (nullptr != m_spkSelectObject) {
+					m_spkSelectObject->Up(-dy); transGizmo->SetPosition(m_spkSelectObject->GetPosition());
+				}
+			}
+				break;
+			case SEL_Z:
+			{
+				if (nullptr != m_spkSelectObject) {
+					m_spkSelectObject->Forward(dx); transGizmo->SetPosition(m_spkSelectObject->GetPosition());
+				}
+			}
+				break;
+			default:
+				break;
+			}
+		}
 			break;
 		case DEFINE::C_ROT:
-			RotateSelectObject(rayPos, rayDir, fDist, dx, dy);
+			//RotateSelectObject(rayPos, rayDir, fDist, dx, dy);
+		{
+			RotationGizmo* rotateGizmo = dynamic_cast<RotationGizmo*>(m_spkGizmoManager->GetGizmo(m_eChangeType));
+			if (nullptr != m_spkSelectObject) {
+				m_spkSelectObject->Roll(-dy * 50); rotateGizmo->Roll(-dy * 50);
+			}
+		}
 			break;
 		case DEFINE::C_SCALE:
-			ScaleSelectObject(rayPos, rayDir, fDist, dx, dy);
+			//ScaleSelectObject(rayPos, rayDir, fDist, dx, dy);
+		{
+			ScalingGizmo* scaleGizmo = dynamic_cast<ScalingGizmo*>(m_spkGizmoManager->GetGizmo(m_eChangeType));
+			switch (m_eSelectExis)
+			{
+			case SEL_X:
+			{
+				if (nullptr != m_spkSelectObject) {
+					m_spkSelectObject->ScalingX(dx);
+				}
+			}
+			break;
+			case SEL_Y:
+			{
+				if (nullptr != m_spkSelectObject) {
+					m_spkSelectObject->ScalingY(-dy);
+				}
+			}
+			break;
+			case SEL_Z:
+			{
+				if (nullptr != m_spkSelectObject) {
+					m_spkSelectObject->ScalingZ(dx);
+				}
+			}
+			break;
+			default:
+				break;
+			}
+		}
 			break;
 		case DEFINE::MAX_CHANGE_TYPE:
 			std::cout << "Invalid Change Type: " << m_eChangeType << std::endl;
@@ -195,11 +263,83 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 	XMVECTOR rayPos; XMVECTOR rayDir;
 	GetRayPosAndDir(x, y, rayPos, rayDir);
 
-	bool bPick = false;
 	float fDist = 9999.f;
-	float fMin = 9999.f;
-	SP_Object iter = nullptr;
+	if (nullptr != m_spkSelectObject)
+	{
+		switch (m_eChangeType)
+		{
+		case DEFINE::C_TRNAS:
+		{
+			TransGizmo* transGizmo = dynamic_cast<TransGizmo*>(m_spkGizmoManager->GetGizmo(m_eChangeType));
+			if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &transGizmo->GetAABBX(), &fDist))
+			{
+				std::cout << "X축선택" << std::endl;
+				m_eSelectExis = SEL_X;
+				m_bSelectGizmo = true;
+				return;
+			}
+			else if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &transGizmo->GetAABBY(), &fDist))
+			{
+				std::cout << "Y축선택" << std::endl;
+				m_eSelectExis = SEL_Y;
+				m_bSelectGizmo = true;
+				return;
+			}
+			else if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &transGizmo->GetAABBZ(), &fDist))
+			{
+				std::cout << "Z축선택" << std::endl;
+				m_eSelectExis = SEL_Z;
+				m_bSelectGizmo = true;
+				return;
+			}
+		}
+			break;
+		case DEFINE::C_ROT:
+		{
+			RotationGizmo* rotateGizmo = dynamic_cast<RotationGizmo*>(m_spkGizmoManager->GetGizmo(m_eChangeType));
+			if (TRUE == IntersectRaySphere(rayPos, rayDir, &rotateGizmo->GetSphere(), &fDist))
+			{
+				std::cout << "구충돌체 선택" << std::endl;
+				m_eSelectExis = SEL_X;
+				m_bSelectGizmo = true;
+				return;
+			}
+		}
+			break;
+		case DEFINE::C_SCALE:
+		{
+			ScalingGizmo* scaleGizmo = dynamic_cast<ScalingGizmo*>(m_spkGizmoManager->GetGizmo(m_eChangeType));
+			if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &scaleGizmo->GetAABBX(), &fDist))
+			{
+				std::cout << "X축선택" << std::endl;
+				m_eSelectExis = SEL_X;
+				m_bSelectGizmo = true;
+				return;
+			}
+			else if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &scaleGizmo->GetAABBY(), &fDist))
+			{
+				std::cout << "Y축선택" << std::endl;
+				m_eSelectExis = SEL_Y;
+				m_bSelectGizmo = true;
+				return;
+			}
+			else if (TRUE == IntersectRayAxisAlignedBox(rayPos, rayDir, &scaleGizmo->GetAABBZ(), &fDist))
+			{
+				std::cout << "Z축선택" << std::endl;
+				m_eSelectExis = SEL_Z;
+				m_bSelectGizmo = true;
+				return;
+			}
+		}
+			break;
+		default:
+			break;
+		}
+	}
 
+	bool bPick = false;
+	SP_Object iter = nullptr;
+	float fMin = 9999.f;
 	for (auto obj : m_listObject)
 	{
 		if (false == IntersectRayAxisAlignedBox(rayPos, rayDir, &obj->GetAABB(), &fDist))	// 도형 선택
@@ -235,6 +375,19 @@ void Scene::OnMouseLDown(WPARAM wParam, int x, int y)
 }
 
 void Scene::OnMouseRDown(WPARAM wParam, int x, int y)
+{
+}
+
+void Scene::OnMouseLUp(WPARAM wParam, int x, int y)
+{
+	if (m_bSelectGizmo)
+	{
+		m_bSelectGizmo = false;
+		std::cout << "기즈모선택해제" << std::endl;
+	}
+}
+
+void Scene::OnMouseRUp(WPARAM wParam, int x, int y)
 {
 }
 

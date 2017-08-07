@@ -76,14 +76,23 @@ void ToolFramework::OnMouseRDown(WPARAM wParam, int x, int y)
 	if (m_pkScene)m_pkScene->OnMouseRDown(wParam, x, y);
 }
 
+void ToolFramework::OnMouseLUp(WPARAM wParam, int x, int y)
+{
+	if (m_pkScene)m_pkScene->OnMouseLUp(wParam, x, y);
+}
+
+void ToolFramework::OnMouseRUp(WPARAM wParam, int x, int y)
+{
+	if (m_pkScene)m_pkScene->OnMouseRUp(wParam, x, y);
+}
+
+
 void ToolFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 }
 
 void ToolFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-	ID3D11Device* pd3dDevice = DeviceManager::GetInstance().GetDevice();
-
 	switch (nMessageID)
 	{
 	case WM_KEYUP:
@@ -108,7 +117,6 @@ void ToolFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPAR
 
 LRESULT CALLBACK ToolFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-
 	switch (nMessageID)
 	{
 	case WM_LBUTTONDOWN:
@@ -118,7 +126,10 @@ LRESULT CALLBACK ToolFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessa
 		OnMouseRDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		break;
 	case WM_LBUTTONUP:
+		OnMouseLUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		break;
 	case WM_RBUTTONUP:
+		OnMouseRUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		break;
 	case WM_MOUSEMOVE:
 		OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
