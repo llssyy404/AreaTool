@@ -22,9 +22,6 @@ public:
 	void ReleaseObjects();
 
 	void GetRayPosAndDir(int x, int y, XMVECTOR& rayPos, XMVECTOR& rayDir);
-	void TransformSelectObject(const XMVECTOR &rayPos, const XMVECTOR &rayDir, float &fDist, float dx, float dy);
-	void RotateSelectObject(const XMVECTOR &rayPos, const XMVECTOR &rayDir, float &fDist, float dx, float dy);
-	void ScaleSelectObject(const XMVECTOR &rayPos, const XMVECTOR &rayDir, float &fDist, float dx, float dy);
 
 	void OnMouseMoveRightBtn(int x, int y);
 	void OnMouseMoveLeftBtn(int x, int y);
@@ -48,6 +45,8 @@ private:
 	SP_Object m_spkSelectObject;
 	POINT	m_poLastMousePos;
 	DEFINE::CHANGE_TYPE m_eChangeType;
-	bool m_bSelectGizmo;
+	//bool m_bSelectGizmo;
 	SELECT_EXIS m_eSelectExis;
+
+	std::function<void(float)> m_functionOfSelObj;
 };
