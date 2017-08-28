@@ -24,11 +24,17 @@ GizmoManager::~GizmoManager()
 
 Gizmo* GizmoManager::GetGizmo(DEFINE::CHANGE_TYPE eChangeType) const
 { 
+	if (eChangeType >= DEFINE::CHANGE_TYPE::MAX_CHANGE_TYPE)
+		return nullptr;
+
 	return m_arrGizmo[static_cast<int>(eChangeType)]; 
 }
 
 void GizmoManager::SetSelection(DEFINE::CHANGE_TYPE eChangeType, bool bSelection)
 {
+	if (eChangeType >= DEFINE::CHANGE_TYPE::MAX_CHANGE_TYPE)
+		return;
+
 	m_bSelectGiszmo = bSelection;
 	if (!bSelection)
 		m_spkSelectObject = nullptr;
@@ -41,17 +47,23 @@ void GizmoManager::SetSelectObject(const std::shared_ptr<Object>& spkSelectObjec
 
 void GizmoManager::AnimateObjects(DEFINE::CHANGE_TYPE eChangeType, float fTimeElapsed)
 {
+	if (eChangeType >= DEFINE::CHANGE_TYPE::MAX_CHANGE_TYPE)
+		return;
+
 	if (!m_bSelectGiszmo)
 		return;
 
-	if(m_spkSelectObject) m_arrGizmo[static_cast<int>(eChangeType)]->SetPosition(m_spkSelectObject->GetPosition());
-	m_arrGizmo[static_cast<int>(eChangeType)]->AnimateObjects(fTimeElapsed);
+	if(m_spkSelectObject) m_arrGizmo[eChangeType]->SetPosition(m_spkSelectObject->GetPosition());
+	m_arrGizmo[eChangeType]->AnimateObjects(fTimeElapsed);
 }
 
 void GizmoManager::Render(DEFINE::CHANGE_TYPE eChangeType)
 {
+	if (eChangeType >= DEFINE::CHANGE_TYPE::MAX_CHANGE_TYPE)
+		return;
+
 	if (!m_bSelectGiszmo)
 		return;
 
-	m_arrGizmo[static_cast<int>(eChangeType)]->Render();
+	m_arrGizmo[eChangeType]->Render();
 }

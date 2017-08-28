@@ -22,6 +22,9 @@ public:
 	void ReleaseObjects();
 
 	void GetRayPosAndDir(int x, int y, XMVECTOR& rayPos, XMVECTOR& rayDir);
+	bool PickGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir);
+	void PickObject(XMVECTOR& rayPos, XMVECTOR& rayDir);
+	void DeleteSelectObject();
 
 	void OnMouseMoveRightBtn(int x, int y);
 	void OnMouseMoveLeftBtn(int x, int y);
