@@ -1,6 +1,8 @@
 #pragma once
 
-class DeviceManager
+#include "Singleton.h"
+
+class DeviceManager : public Singleton<DeviceManager>
 {
 public:
 	DeviceManager();
@@ -26,22 +28,5 @@ private:
 	ID3D11RenderTargetView* m_pRenderTargetView;
 	ID3D11Texture2D*		m_pd3dDepthStencilBuffer;
 	ID3D11DepthStencilView*	m_pd3dDepthStencilView;
-
-public:
-	static DeviceManager& GetInstance()
-	{
-		if (nullptr == m_pkInstance)
-			m_pkInstance = new DeviceManager();
-
-		return *m_pkInstance;
-	}
-
-	static void Destroy()
-	{
-		if (m_pkInstance) delete m_pkInstance;
-	}
-
-private:
-	static DeviceManager* m_pkInstance;
 };
 

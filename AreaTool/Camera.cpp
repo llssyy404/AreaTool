@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "Camera.h"
 
-Camera* Camera::m_pkInstance = NULL;
-
 Camera::Camera()
 : mPosition(0.0f, 0.0f, 0.0f),
 mRight(1.0f, 0.0f, 0.0f),

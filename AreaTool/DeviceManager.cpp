@@ -2,8 +2,6 @@
 #include "Define.h"
 #include "DeviceManager.h"
 
-DeviceManager* DeviceManager::m_pkInstance = nullptr;
-
 DeviceManager::DeviceManager()
 {
 	m_driverType = D3D_DRIVER_TYPE_NULL;

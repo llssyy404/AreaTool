@@ -1,6 +1,8 @@
 #pragma once
 
-class Camera
+#include "Singleton.h"
+
+class Camera : public Singleton<Camera>
 {
 public:
 	Camera();
@@ -64,23 +66,4 @@ private:
 
 	XMFLOAT4X4 mView;
 	XMFLOAT4X4 mProj;
-	
-public:
-	static Camera& GetInstance()
-	{
-		if (nullptr == m_pkInstance)
-		{
-			m_pkInstance = new Camera;
-		}
-
-		return *m_pkInstance;
-	}
-
-	static void Destroy()
-	{
-		if (m_pkInstance) delete m_pkInstance;
-	}
-
-private:
-	static Camera* m_pkInstance;
 };
