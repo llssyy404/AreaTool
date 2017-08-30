@@ -22,6 +22,9 @@ public:
 	void ReleaseObjects();
 
 	void GetRayPosAndDir(int x, int y, XMVECTOR& rayPos, XMVECTOR& rayDir);
+	bool PickTransGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir);
+	bool PickRotGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir);
+	bool PickScaleGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir);
 	bool PickGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir);
 	void PickObject(XMVECTOR& rayPos, XMVECTOR& rayDir);
 	void DeleteSelectObject();
@@ -36,13 +39,12 @@ public:
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam, float fTimeElapsed);
 
-	bool ProcessInput(float timeElapsed, HWND hwnd);
 	void AnimateObjects(float fTimeElapsed);
 	void Render(float fTimeElapsed);
 
 private:
 	typedef std::shared_ptr<Object> SP_Object;
-	std::shared_ptr<GizmoManager> m_spkGizmoManager;
+	std::unique_ptr<GizmoManager> m_upkGizmoManager;
 	std::list<SP_Object> m_listObject;
 	SP_Object m_spkGrid;
 	SP_Object m_spkSelectObject;

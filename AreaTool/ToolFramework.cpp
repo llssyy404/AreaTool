@@ -89,6 +89,7 @@ void ToolFramework::OnMouseRUp(WPARAM wParam, int x, int y)
 
 void ToolFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
+	if (m_pkScene)m_pkScene->OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
 }
 
 void ToolFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
@@ -120,19 +121,11 @@ LRESULT CALLBACK ToolFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessa
 	switch (nMessageID)
 	{
 	case WM_LBUTTONDOWN:
-		OnMouseLDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-		break;
 	case WM_RBUTTONDOWN:
-		OnMouseRDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-		break;
 	case WM_LBUTTONUP:
-		OnMouseLUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-		break;
 	case WM_RBUTTONUP:
-		OnMouseRUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-		break;
 	case WM_MOUSEMOVE:
-		OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
 		break;
 	case WM_KEYDOWN:
 	case WM_CHAR:
