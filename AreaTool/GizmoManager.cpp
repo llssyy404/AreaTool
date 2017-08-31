@@ -27,7 +27,7 @@ Gizmo* GizmoManager::GetGizmo(DEFINE::CHANGE_TYPE eChangeType) const
 	if (eChangeType >= DEFINE::CHANGE_TYPE::MAX_CHANGE_TYPE)
 		return nullptr;
 
-	return m_arrGizmo[static_cast<int>(eChangeType)]; 
+	return m_arrGizmo[eChangeType]; 
 }
 
 void GizmoManager::SetSelection(DEFINE::CHANGE_TYPE eChangeType, bool bSelection)

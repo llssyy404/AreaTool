@@ -29,6 +29,8 @@ Object::Object()
 	m_AxisAlignedBox.Center = m_vPosition;
 	m_AxisAlignedBox.Extents = XMFLOAT3(0.5f, 0.5f, 0.5f);
 	m_AxisAlignedBox.Scale = XMFLOAT3(1.f, 1.f, 1.f);
+
+	m_f4Color = DEFINE::COLOR_WHITE;
 }
 
 Object::~Object()
@@ -226,7 +228,6 @@ HRESULT Object::CreateVertexShader(ID3DBlob * &pVSBlob)
 void Object::BuildGeometryBuffers()
 {
 	GeometryGenerator::MeshData object;
-	XMFLOAT4 color = DEFINE::COLOR_WHITE;
 
 	CreateFigure(object);
 
@@ -239,7 +240,7 @@ void Object::BuildGeometryBuffers()
 	for (size_t i = 0; i < object.Vertices.size(); ++i)
 	{
 		vertices[i].m_f3Pos = object.Vertices[i].Position;
-		vertices[i].m_f4Color = color;
+		vertices[i].m_f4Color = m_f4Color;
 	}
 
 	CreateVertexBuffer(vertices);
@@ -431,6 +432,8 @@ void Sphere::CreateFigure(GeometryGenerator::MeshData& kMeshData)
 ///////////////////////////////////////////////////////////////////////////
 Grid::Grid() : Object()
 {
+	m_f4Color = DEFINE::COLOR_GRAY;
+
 	Init();
 
 	m_AxisAlignedBox.Center = m_vPosition;

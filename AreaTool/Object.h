@@ -84,6 +84,8 @@ protected:
 	int m_iVertexOffset;
 	UINT m_uiIndexOffset;
 	UINT m_uiIndexCount;
+
+	XMFLOAT4 m_f4Color;
 };
 
 class Box : public Object
