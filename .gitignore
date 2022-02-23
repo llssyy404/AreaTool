@@ -1,0 +1,9 @@
+x64
+.vs
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.sln
+*.suo
+*.vcxproj
