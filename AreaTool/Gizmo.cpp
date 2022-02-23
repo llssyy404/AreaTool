@@ -8,6 +8,7 @@ TransGizmo::TransGizmo() : Gizmo()
 {
 	Init();
 
+	// aabb
 	XMFLOAT3 posX = m_vPosition; posX.x += 0.5f;
 	m_AxisAlignedBoxX.Center = posX;
 	m_AxisAlignedBoxX.Extents = XMFLOAT3(0.5f, 0.05f, 0.05f);
@@ -22,6 +23,22 @@ TransGizmo::TransGizmo() : Gizmo()
 	m_AxisAlignedBoxZ.Center = posZ;
 	m_AxisAlignedBoxZ.Extents = XMFLOAT3(0.05f, 0.05f, 0.5f);
 	m_AxisAlignedBoxZ.Scale = XMFLOAT3(1.f, 1.f, 1.f);
+
+	// obb
+	posX = m_vPosition; posX.x += 0.5f;
+	m_OrientedBoxX.Center = posX;
+	m_OrientedBoxX.Extents = XMFLOAT3(0.5f, 0.05f, 0.05f);
+	m_OrientedBoxX.Orientation = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
+
+	posY = m_vPosition; posY.y += 0.5f;
+	m_OrientedBoxY.Center = posY;
+	m_OrientedBoxY.Extents = XMFLOAT3(0.05f, 0.5f, 0.05f);
+	m_OrientedBoxY.Orientation = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
+
+	posZ = m_vPosition; posZ.z += 0.5f;
+	m_OrientedBoxZ.Center = posZ;
+	m_OrientedBoxZ.Extents = XMFLOAT3(0.05f, 0.05f, 0.5f);
+	m_OrientedBoxZ.Orientation = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
 }
 
 TransGizmo::~TransGizmo()
@@ -128,6 +145,17 @@ void TransGizmo::WorldMatrixSRT()
 	TransformAxisAlignedBox(&m_AxisAlignedBoxX, &m_AxisAlignedBoxX, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x + 0.5f, m_vPosition.y, m_vPosition.z)));
 	TransformAxisAlignedBox(&m_AxisAlignedBoxY, &m_AxisAlignedBoxY, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z)));
 	TransformAxisAlignedBox(&m_AxisAlignedBoxZ, &m_AxisAlignedBoxZ, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f)));
+	
+	m_OrientedBoxX.Center = XMFLOAT3(m_vPosition.x + 0.5f, m_vPosition.y, m_vPosition.z);
+	m_OrientedBoxY.Center = XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z);
+	m_OrientedBoxZ.Center = XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f);
+	TransformOrientedBox(&m_OrientedBoxX, &m_OrientedBoxX, 1.0f, XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(0.0f, 0.0f, 0.0f)));
+	TransformOrientedBox(&m_OrientedBoxY, &m_OrientedBoxY, 1.0f, XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(0.0f, 0.0f, 0.0f)));
+	TransformOrientedBox(&m_OrientedBoxZ, &m_OrientedBoxZ, 1.0f, XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(0.0f, 0.0f, 0.0f)));
+	std::cout << "postion: " << m_vPosition.x << ", " << m_vPosition.y << ", " << m_vPosition.z << std::endl;
+	std::cout << "X: " << m_OrientedBoxX.Center.x << ", " << m_OrientedBoxX.Center.y << ", " << m_OrientedBoxX.Center.z << std::endl;
+	std::cout << "Y: " << m_OrientedBoxY.Center.x << ", " << m_OrientedBoxY.Center.y << ", " << m_OrientedBoxY.Center.z << std::endl;
+	std::cout << "Z: " << m_OrientedBoxZ.Center.x << ", " << m_OrientedBoxZ.Center.y << ", " << m_OrientedBoxZ.Center.z << std::endl;
 }
 
 void TransGizmo::Render()

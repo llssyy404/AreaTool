@@ -26,12 +26,20 @@ public:
 	XNA::AxisAlignedBox GetAABBX() const { return m_AxisAlignedBoxX; }
 	XNA::AxisAlignedBox GetAABBY() const { return m_AxisAlignedBoxY; }
 	XNA::AxisAlignedBox GetAABBZ() const { return m_AxisAlignedBoxZ; }
+	XNA::OrientedBox GetOBBX() const { return m_OrientedBoxX; }
+	XNA::OrientedBox GetOBBY() const { return m_OrientedBoxY; }
+	XNA::OrientedBox GetOBBZ() const { return m_OrientedBoxZ; }
+
 
 private:
 	UINT m_uiIndexCountCone;
 	XNA::AxisAlignedBox m_AxisAlignedBoxX;
 	XNA::AxisAlignedBox m_AxisAlignedBoxY;
 	XNA::AxisAlignedBox m_AxisAlignedBoxZ;
+	XNA::OrientedBox m_OrientedBoxX;
+	XNA::OrientedBox m_OrientedBoxY;
+	XNA::OrientedBox m_OrientedBoxZ;
+
 };
 
 class RotationGizmo : public Gizmo

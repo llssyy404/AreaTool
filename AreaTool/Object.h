@@ -48,11 +48,14 @@ public:
 	virtual void		ScalingZ(float size);
 
 	XMFLOAT3	GetPosition() const { return m_vPosition; }
+	XMFLOAT3	GetRotation() const { return m_f3Rotation; }
 	XMFLOAT3	GetRight() const { return m_vRight; }
 	XMFLOAT3	GetUp() const { return m_vUp; }
 	XMFLOAT3    GetLook() const { return m_vLook; }
 	XNA::AxisAlignedBox GetAABB() const { return m_AxisAlignedBox; }
+	XNA::OrientedBox GetOBB() const { return m_OrientedBox; }
 	void		SetPosition(XMFLOAT3 vPosition) { m_vPosition = vPosition; }
+	void		SetRotation(XMFLOAT3 f3Rotation) { f3Rotation = m_f3Rotation; }
 	void		SetSelection(bool sel) { m_bSelect = sel; }
 
 	virtual void	AnimateObjects(float fTimeElapsed);
@@ -79,6 +82,7 @@ protected:
 	XMMATRIX                m_World;
 
 	XNA::AxisAlignedBox m_AxisAlignedBox;
+	XNA::OrientedBox m_OrientedBox;
 	bool m_bSelect;
 
 	int m_iVertexOffset;

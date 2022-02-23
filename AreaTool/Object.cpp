@@ -282,6 +282,7 @@ void Object::WorldMatrixSRT()
 	m_World = XMMatrixMultiply(XMMatrixMultiply(XMMatrixMultiply(m_World, scale), rot), trans);
 	
 	TransformAxisAlignedBox(&m_AxisAlignedBox, &m_AxisAlignedBox, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&m_vPosition));
+	//TransformOrientedBox(&m_OrientedBox, &m_OrientedBox, 1.0f, XMQuaternionRotationMatrix(rot), XMLoadFloat3(&m_vPosition));
 }
 
 void Object::Pitch(float fAngle)
@@ -448,7 +449,6 @@ Grid::~Grid()
 void Grid::CreateFigure(GeometryGenerator::MeshData& kMeshData)
 {
 	GeometryGenerator geoGen;
-	XMFLOAT4 color = DEFINE::COLOR_GRAY;
 	geoGen.CreateGrid(30.0f, 30.0f, 30, 30, kMeshData);
 }
 
