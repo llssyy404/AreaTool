@@ -54,4 +54,5 @@ private:
 	SELECT_EXIS m_eSelectExis;
 
 	std::function<void(float)> m_functionOfSelObj;
+	std::function<void(float)> m_functionOfSelGizmo;
 };

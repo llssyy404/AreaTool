@@ -30,6 +30,11 @@ Object::Object()
 	m_AxisAlignedBox.Extents = XMFLOAT3(0.5f, 0.5f, 0.5f);
 	m_AxisAlignedBox.Scale = XMFLOAT3(1.f, 1.f, 1.f);
 
+	m_BaseOrientedBox.Center = m_vPosition;
+	m_BaseOrientedBox.Extents = XMFLOAT3(0.5f, 0.5f, 0.5f);
+	m_BaseOrientedBox.Orientation = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
+	m_OrientedBox = m_BaseOrientedBox;
+
 	m_f4Color = DEFINE::COLOR_WHITE;
 }
 
@@ -282,7 +287,14 @@ void Object::WorldMatrixSRT()
 	m_World = XMMatrixMultiply(XMMatrixMultiply(XMMatrixMultiply(m_World, scale), rot), trans);
 	
 	TransformAxisAlignedBox(&m_AxisAlignedBox, &m_AxisAlignedBox, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&m_vPosition));
-	//TransformOrientedBox(&m_OrientedBox, &m_OrientedBox, 1.0f, XMQuaternionRotationMatrix(rot), XMLoadFloat3(&m_vPosition));
+	
+	m_OrientedBox.Extents.x = m_BaseOrientedBox.Extents.x * m_f3Scale.x;
+	m_OrientedBox.Extents.y = m_BaseOrientedBox.Extents.y * m_f3Scale.y;
+	m_OrientedBox.Extents.z = m_BaseOrientedBox.Extents.z * m_f3Scale.z;
+	
+	XMVECTOR vQuaternion = XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z));
+	XMStoreFloat4(&m_BaseOrientedBox.Orientation, vQuaternion);
+	m_BaseOrientedBox.Center = m_vPosition;
 }
 
 void Object::Pitch(float fAngle)

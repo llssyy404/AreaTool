@@ -82,7 +82,9 @@ protected:
 	XMMATRIX                m_World;
 
 	XNA::AxisAlignedBox m_AxisAlignedBox;
+	XNA::OrientedBox m_BaseOrientedBox;
 	XNA::OrientedBox m_OrientedBox;
+
 	bool m_bSelect;
 
 	int m_iVertexOffset;
