@@ -568,7 +568,7 @@ void	ScalingGizmo::Render()
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6 + m_uiIndexCount * 3, 78);
 }
 
-DEFINE::SELECT_EXIS RotationGizmo::IntersectRayAxis(XMVECTOR& rayPos, XMVECTOR& rayDir)
+DEFINE::SELECT_EXIS ScalingGizmo::IntersectRayAxis(XMVECTOR& rayPos, XMVECTOR& rayDir)
 {
 	DEFINE::SELECT_EXIS intersectAxis = DEFINE::SELECT_EXIS::MAX_SELECT_EXIS;
 
