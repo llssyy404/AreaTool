@@ -4,6 +4,7 @@
 
 #include "Gizmo.h"
 
+
 TransGizmo::TransGizmo() : Gizmo()
 {
 	Init();
@@ -146,9 +147,9 @@ void TransGizmo::WorldMatrixSRT()
 	TransformAxisAlignedBox(&m_AxisAlignedBoxY, &m_AxisAlignedBoxY, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z)));
 	TransformAxisAlignedBox(&m_AxisAlignedBoxZ, &m_AxisAlignedBoxZ, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f)));
 	
-	m_OrientedBoxX.Center = XMFLOAT3(m_vPosition.x + 0.5f, m_vPosition.y, m_vPosition.z);
-	m_OrientedBoxY.Center = XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z);
-	m_OrientedBoxZ.Center = XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f);
+	m_OrientedBoxX.Center = XMFLOAT3(m_vPosition.x + m_vRight.x * 0.5f, m_vPosition.y + m_vRight.y * 0.5f, m_vPosition.z + m_vRight.z * 0.5f);
+	m_OrientedBoxY.Center = XMFLOAT3(m_vPosition.x + m_vUp.x * 0.5f, m_vPosition.y + m_vUp.y * 0.5f, m_vPosition.z + m_vUp.z * 0.5f);
+	m_OrientedBoxZ.Center = XMFLOAT3(m_vPosition.x + m_vLook.x * 0.5f, m_vPosition.y + m_vLook.y * 0.5f, m_vPosition.z + m_vLook.z * 0.5f);
 	XMStoreFloat4(&m_OrientedBoxX.Orientation, XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z)));
 	XMStoreFloat4(&m_OrientedBoxY.Orientation, XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z)));
 	XMStoreFloat4(&m_OrientedBoxZ.Orientation, XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z)));
@@ -186,6 +187,42 @@ void TransGizmo::Render()
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount, 6);
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount + m_uiIndexCountCone, 6 + 30);
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCountCone, m_uiIndexCount + m_uiIndexCountCone * 2, 6 + 60);
+}
+
+DEFINE::SELECT_EXIS TransGizmo::IntersectRayAxis(XMVECTOR& rayPos, XMVECTOR& rayDir)
+{
+	DEFINE::SELECT_EXIS result = DEFINE::SELECT_EXIS::MAX_SELECT_EXIS;
+
+	float fMin = 9999.f;
+	float fDist = 9999.f;
+	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &GetOBBX(), &fDist))
+	{
+		if (fMin > fDist)
+		{
+			fMin = fDist;
+			result = DEFINE::SELECT_EXIS::SEL_X;
+		}
+	}
+
+	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &GetOBBY(), &fDist))
+	{
+		if (fMin > fDist)
+		{
+			fMin = fDist;
+			result = DEFINE::SELECT_EXIS::SEL_Y;
+		}
+	}
+
+	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &GetOBBZ(), &fDist))
+	{
+		if (fMin > fDist)
+		{
+			fMin = fDist;
+			result = DEFINE::SELECT_EXIS::SEL_Z;
+		}
+	}
+
+	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -283,9 +320,9 @@ void RotationGizmo::WorldMatrixSRT()
 
 	TransformSphere(&m_Sphere, &m_Sphere, m_f3Scale.x, XMQuaternionRotationMatrix(rot), XMLoadFloat3(&m_vPosition));
 
-	m_OrientedBoxX.Center = XMFLOAT3(m_vPosition.x + 0.5f, m_vPosition.y, m_vPosition.z);
-	m_OrientedBoxY.Center = XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z);
-	m_OrientedBoxZ.Center = XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f);
+	m_OrientedBoxX.Center = XMFLOAT3(m_vPosition.x + m_vRight.x * 0.5f, m_vPosition.y + m_vRight.y * 0.5f, m_vPosition.z + m_vRight.z * 0.5f);
+	m_OrientedBoxY.Center = XMFLOAT3(m_vPosition.x + m_vUp.x * 0.5f, m_vPosition.y + m_vUp.y * 0.5f, m_vPosition.z + m_vUp.z * 0.5f);
+	m_OrientedBoxZ.Center = XMFLOAT3(m_vPosition.x + m_vLook.x * 0.5f, m_vPosition.y + m_vLook.y * 0.5f, m_vPosition.z + m_vLook.z * 0.5f);
 	XMStoreFloat4(&m_OrientedBoxX.Orientation, XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z)));
 	XMStoreFloat4(&m_OrientedBoxY.Orientation, XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z)));
 	XMStoreFloat4(&m_OrientedBoxZ.Orientation, XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z)));
@@ -316,6 +353,42 @@ void	RotationGizmo::Render()
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6, 6);
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6 + m_uiIndexCount, 6 + m_uiIndexCount);
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6 + m_uiIndexCount * 2, 6 + m_uiIndexCount * 2);
+}
+
+DEFINE::SELECT_EXIS RotationGizmo::IntersectRayAxis(XMVECTOR& rayPos, XMVECTOR& rayDir)
+{
+	DEFINE::SELECT_EXIS result = DEFINE::SELECT_EXIS::MAX_SELECT_EXIS;
+
+	float fMin = 9999.f;
+	float fDist = 9999.f;
+	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &GetOBBX(), &fDist))
+	{
+		if (fMin > fDist)
+		{
+			fMin = fDist;
+			result = DEFINE::SELECT_EXIS::SEL_X;
+		}
+	}
+
+	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &GetOBBY(), &fDist))
+	{
+		if (fMin > fDist)
+		{
+			fMin = fDist;
+			result = DEFINE::SELECT_EXIS::SEL_Y;
+		}
+	}
+
+	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &GetOBBZ(), &fDist))
+	{
+		if (fMin > fDist)
+		{
+			fMin = fDist;
+			result = DEFINE::SELECT_EXIS::SEL_Z;
+		}
+	}
+
+	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -442,7 +515,6 @@ void	ScalingGizmo::BuildGeometryBuffers()
 	m_uiIndexCount = 36;
 	m_uiIndexOffset = 0;
 
-	std::cout << m_uiIndexCount << std::endl;
 	CreateVertexBuffer(vertices);
 	CreateIndexBuffer(indices);
 }
@@ -455,16 +527,17 @@ void ScalingGizmo::WorldMatrixSRT()
 	m_World = XMMatrixIdentity();
 	m_World = XMMatrixMultiply(XMMatrixMultiply(XMMatrixMultiply(m_World, scale), rot), trans);
 
-	TransformAxisAlignedBox(&m_AxisAlignedBoxX, &m_AxisAlignedBoxX, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x + 0.5f, m_vPosition.y, m_vPosition.z)));
-	TransformAxisAlignedBox(&m_AxisAlignedBoxY, &m_AxisAlignedBoxY, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z)));
-	TransformAxisAlignedBox(&m_AxisAlignedBoxZ, &m_AxisAlignedBoxZ, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f)));
+	//TransformAxisAlignedBox(&m_AxisAlignedBoxX, &m_AxisAlignedBoxX, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x + 0.5f, m_vPosition.y, m_vPosition.z)));
+	//TransformAxisAlignedBox(&m_AxisAlignedBoxY, &m_AxisAlignedBoxY, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z)));
+	//TransformAxisAlignedBox(&m_AxisAlignedBoxZ, &m_AxisAlignedBoxZ, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f)));
 	
-	m_OrientedBoxX.Center = XMFLOAT3(m_vPosition.x + 0.5f, m_vPosition.y, m_vPosition.z);
-	m_OrientedBoxY.Center = XMFLOAT3(m_vPosition.x, m_vPosition.y + 0.5f, m_vPosition.z);
-	m_OrientedBoxZ.Center = XMFLOAT3(m_vPosition.x, m_vPosition.y, m_vPosition.z + 0.5f);
+	m_OrientedBoxX.Center = XMFLOAT3(m_vPosition.x + m_vRight.x * 0.5f, m_vPosition.y + m_vRight.y * 0.5f, m_vPosition.z + m_vRight.z * 0.5f);
+	m_OrientedBoxY.Center = XMFLOAT3(m_vPosition.x + m_vUp.x * 0.5f, m_vPosition.y + m_vUp.y * 0.5f, m_vPosition.z + m_vUp.z * 0.5f);
+	m_OrientedBoxZ.Center = XMFLOAT3(m_vPosition.x + m_vLook.x * 0.5f, m_vPosition.y + m_vLook.y * 0.5f, m_vPosition.z + m_vLook.z * 0.5f);
 	XMStoreFloat4(&m_OrientedBoxX.Orientation, XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z)));
 	XMStoreFloat4(&m_OrientedBoxY.Orientation, XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z)));
 	XMStoreFloat4(&m_OrientedBoxZ.Orientation, XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z)));
+	//std::cout << "rot: " << m_f3Rotation.x << ", " << m_f3Rotation.y << ", " << m_f3Rotation.z << std::endl;
 }
 
 void	ScalingGizmo::Render()
@@ -493,4 +566,40 @@ void	ScalingGizmo::Render()
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6 + m_uiIndexCount, 30);
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6 + m_uiIndexCount * 2, 54);
 	DeviceManager::GetInstance().GetDeviceContext()->DrawIndexed(m_uiIndexCount, 6 + m_uiIndexCount * 3, 78);
+}
+
+DEFINE::SELECT_EXIS RotationGizmo::IntersectRayAxis(XMVECTOR& rayPos, XMVECTOR& rayDir)
+{
+	DEFINE::SELECT_EXIS intersectAxis = DEFINE::SELECT_EXIS::MAX_SELECT_EXIS;
+
+	float fMin = 9999.f;
+	float fDist = 9999.f;
+	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &GetOBBX(), &fDist))
+	{
+		if (fMin > fDist)
+		{
+			fMin = fDist;
+			intersectAxis = DEFINE::SELECT_EXIS::SEL_X;
+		}
+	}
+
+	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &GetOBBY(), &fDist))
+	{
+		if (fMin > fDist)
+		{
+			fMin = fDist;
+			intersectAxis = DEFINE::SELECT_EXIS::SEL_Y;
+		}
+	}
+
+	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &GetOBBZ(), &fDist))
+	{
+		if (fMin > fDist)
+		{
+			fMin = fDist;
+			intersectAxis = DEFINE::SELECT_EXIS::SEL_Z;
+		}
+	}
+
+	return intersectAxis;
 }

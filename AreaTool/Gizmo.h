@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.h"
+#include "Define.h"
 
 class Gizmo : public Object
 {
@@ -11,6 +12,8 @@ public:
 	virtual void	BuildGeometryBuffers() override = 0;
 	virtual void	WorldMatrixSRT() override = 0;
 	virtual void	Render() override = 0;
+
+	virtual DEFINE::SELECT_EXIS IntersectRayAxis(XMVECTOR& rayPos, XMVECTOR& rayDir) = 0;
 };
 
 class TransGizmo : public Gizmo
@@ -22,6 +25,8 @@ public:
 	virtual void	BuildGeometryBuffers() override;
 	virtual void	WorldMatrixSRT() override;
 	virtual void	Render() override;
+
+	virtual DEFINE::SELECT_EXIS IntersectRayAxis(XMVECTOR& rayPos, XMVECTOR& rayDir);
 
 	XNA::AxisAlignedBox GetAABBX() const { return m_AxisAlignedBoxX; }
 	XNA::AxisAlignedBox GetAABBY() const { return m_AxisAlignedBoxY; }
@@ -50,6 +55,8 @@ public:
 	virtual void	WorldMatrixSRT() override;
 	virtual void	Render() override;
 
+	virtual DEFINE::SELECT_EXIS IntersectRayAxis(XMVECTOR& rayPos, XMVECTOR& rayDir);
+
 	XNA::Sphere GetSphere() const { return m_Sphere; }
 	XNA::OrientedBox GetOBBX() const { return m_OrientedBoxX; }
 	XNA::OrientedBox GetOBBY() const { return m_OrientedBoxY; }
@@ -71,6 +78,8 @@ public:
 	virtual void	BuildGeometryBuffers() override;
 	virtual void	WorldMatrixSRT() override;
 	virtual void	Render() override;
+
+	virtual DEFINE::SELECT_EXIS IntersectRayAxis(XMVECTOR& rayPos, XMVECTOR& rayDir);
 
 	XNA::AxisAlignedBox GetAABBX() const { return m_AxisAlignedBoxX; }
 	XNA::AxisAlignedBox GetAABBY() const { return m_AxisAlignedBoxY; }

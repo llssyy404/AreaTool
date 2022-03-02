@@ -2,12 +2,6 @@
 
 #include "Define.h"
 
-enum SELECT_EXIS
-{
-	SEL_X,
-	SEL_Y,
-	SEL_Z
-};
 
 class Object;
 class GizmoManager;
@@ -22,9 +16,6 @@ public:
 	void ReleaseObjects();
 
 	void GetRayPosAndDir(int x, int y, XMVECTOR& rayPos, XMVECTOR& rayDir);
-	bool PickTransGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir);
-	bool PickRotGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir);
-	bool PickScaleGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir);
 	bool PickGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir);
 	void PickObject(XMVECTOR& rayPos, XMVECTOR& rayDir);
 	void DeleteSelectObject();
@@ -50,9 +41,5 @@ private:
 	SP_Object m_spkSelectObject;
 	POINT	m_poLastMousePos;
 	DEFINE::CHANGE_TYPE m_eChangeType;
-	//bool m_bSelectGizmo;
-	SELECT_EXIS m_eSelectExis;
-
-	std::function<void(float)> m_functionOfSelObj;
-	std::function<void(float)> m_functionOfSelGizmo;
+	DEFINE::SELECT_EXIS m_eSelectExis;
 };

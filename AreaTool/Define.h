@@ -28,4 +28,12 @@ namespace DEFINE
 		C_SCALE,
 		MAX_CHANGE_TYPE
 	};
+
+	enum SELECT_EXIS
+	{
+		SEL_X,
+		SEL_Y,
+		SEL_Z,
+		MAX_SELECT_EXIS
+	};
 }

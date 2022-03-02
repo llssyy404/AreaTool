@@ -4,7 +4,6 @@
 #include "Camera.h"
 #include "GizmoManager.h"
 #include "Gizmo.h"
-//#include "Object.h"
 #include "xnacollision.h"
 
 #include "Scene.h"
@@ -53,113 +52,9 @@ void Scene::GetRayPosAndDir(int x, int y, XMVECTOR& rayPos, XMVECTOR& rayDir)
 	rayDir = XMVector3Normalize(rayDir);
 }
 
-bool Scene::PickTransGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir)
-{
-	const TransGizmo* transGizmo = dynamic_cast<const TransGizmo*>(m_upkGizmoManager->GetGizmo(DEFINE::C_TRNAS));
-	if (nullptr == transGizmo)
-		return false;
-
-	float fDist = 0.f;
-	std::cout << "selectObject: " << m_spkSelectObject->GetPosition().x << ", " << m_spkSelectObject->GetPosition().y << ", " << m_spkSelectObject->GetPosition().z << std::endl;
-	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &transGizmo->GetOBBX(), &fDist))
-	{
-		m_eSelectExis = SEL_X;
-		m_functionOfSelObj = std::bind(&Object::Right, m_spkSelectObject, _1);
-	}
-	else if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &transGizmo->GetOBBY(), &fDist))
-	{
-		m_eSelectExis = SEL_Y;
-		m_functionOfSelObj = std::bind(&Object::Up, m_spkSelectObject, _1);
-	}
-	else if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &transGizmo->GetOBBZ(), &fDist))
-	{
-		m_eSelectExis = SEL_Z;
-		m_functionOfSelObj = std::bind(&Object::Forward, m_spkSelectObject, _1);
-	}
-	else
-		return false;
-
-	return true;
-}
-
-bool Scene::PickRotGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir)
-{
-	RotationGizmo* rotateGizmo = dynamic_cast<RotationGizmo*>(m_upkGizmoManager->GetGizmo(DEFINE::C_ROT));
-	if (nullptr == rotateGizmo)
-		return false;
-
-	float fDist = 0.f;
-	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &rotateGizmo->GetOBBX(), &fDist))
-	{
-		m_eSelectExis = SEL_X;
-		m_functionOfSelObj = std::bind(&Object::Pitch, m_spkSelectObject, _1);
-		m_functionOfSelGizmo = std::bind(&Gizmo::Pitch, rotateGizmo, _1);
-	}
-	else if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &rotateGizmo->GetOBBY(), &fDist))
-	{
-		m_eSelectExis = SEL_Y;
-		m_functionOfSelObj = std::bind(&Object::Yaw, m_spkSelectObject, _1);
-		m_functionOfSelGizmo = std::bind(&Object::Yaw, rotateGizmo, _1);
-	}
-	else if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &rotateGizmo->GetOBBZ(), &fDist))
-	{
-		m_eSelectExis = SEL_Z;
-		m_functionOfSelObj = std::bind(&Object::Roll, m_spkSelectObject, _1);
-		m_functionOfSelGizmo = std::bind(&Object::Roll, rotateGizmo, _1);
-	}
-	else
-		return false;
-
-	return true;
-}
-
-bool Scene::PickScaleGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir)
-{
-	const ScalingGizmo* scaleGizmo = dynamic_cast<const ScalingGizmo*>(m_upkGizmoManager->GetGizmo(DEFINE::C_SCALE));
-	if (nullptr == scaleGizmo)
-		return false;
-
-	float fDist = 0.f;
-	if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &scaleGizmo->GetOBBX(), &fDist))
-	{
-		m_eSelectExis = SEL_X;
-		m_functionOfSelObj = std::bind(&Object::ScalingX, m_spkSelectObject, _1);
-	}
-	else if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &scaleGizmo->GetOBBY(), &fDist))
-	{
-		m_eSelectExis = SEL_Y;
-		m_functionOfSelObj = std::bind(&Object::ScalingY, m_spkSelectObject, _1);
-	}
-	else if (TRUE == IntersectRayOrientedBox(rayPos, rayDir, &scaleGizmo->GetOBBZ(), &fDist))
-	{
-		m_eSelectExis = SEL_Z;
-		m_functionOfSelObj = std::bind(&Object::ScalingZ, m_spkSelectObject, _1);
-	}
-	else
-		return false;
-
-
-	return true;
-}
-
 bool Scene::PickGizmo(XMVECTOR& rayPos, XMVECTOR& rayDir)
 {
-	if (nullptr == m_spkSelectObject)
-		return false;
-
-	switch (m_eChangeType)
-	{
-	case DEFINE::C_TRNAS:
-		return PickTransGizmo(rayPos, rayDir);
-	case DEFINE::C_ROT:
-		return PickRotGizmo(rayPos, rayDir);
-	case DEFINE::C_SCALE:
-		return PickScaleGizmo(rayPos, rayDir);
-	default:
-		break;
-	}
-
-	return false;
+	return m_upkGizmoManager->PickGizmo(rayPos, rayDir);
 }
 
 void Scene::PickObject(XMVECTOR& rayPos, XMVECTOR& rayDir)
@@ -188,10 +83,10 @@ void Scene::PickObject(XMVECTOR& rayPos, XMVECTOR& rayDir)
 
 		if (m_upkGizmoManager)
 		{
-			m_upkGizmoManager->SetSelection(m_eChangeType, true);
-			m_upkGizmoManager->SetSelectObject(m_spkSelectObject);
 			m_spkSelectObject = iter;
 			m_spkSelectObject->SetSelection(true);
+			m_upkGizmoManager->SetSelectObject(m_spkSelectObject);
+			m_upkGizmoManager->SetSelection(m_eChangeType, true);
 		}
 	}
 	else
@@ -229,32 +124,12 @@ void Scene::OnMouseMoveLeftBtn(int x, int y)
 	if (nullptr == m_spkSelectObject)
 		return;
 	
-	if (nullptr == m_functionOfSelObj)
-		return;
-
 	XMVECTOR rayPos; XMVECTOR rayDir;
 	GetRayPosAndDir(x, y, rayPos, rayDir);
 
 	float dx = XMConvertToRadians(0.5f*static_cast<float>(x - m_poLastMousePos.x));
 	float dy = XMConvertToRadians(0.5f*static_cast<float>(y - m_poLastMousePos.y));
-	
-	switch (m_eChangeType)
-	{
-	case DEFINE::C_TRNAS:
-	{
-		m_functionOfSelObj(m_eSelectExis == SEL_Y ? -dy : dx);
-	}break;
-	case DEFINE::C_ROT:
-	{
-		m_functionOfSelObj(-dy * 50);
-		m_functionOfSelGizmo(-dy * 50);
-	}break;
-	case DEFINE::C_SCALE:
-		m_functionOfSelObj(m_eSelectExis == SEL_Y ? -dy : dx);
-		break;
-	default:
-		break;
-	}
+	m_upkGizmoManager->ChangeValue(dx, dy);
 }
 
 void Scene::OnMouseMove(WPARAM wParam, int x, int y)
@@ -289,10 +164,7 @@ void Scene::OnMouseRDown(WPARAM wParam, int x, int y)
 
 void Scene::OnMouseLUp(WPARAM wParam, int x, int y)
 {
-	if (m_functionOfSelObj)
-	{
-		m_functionOfSelObj = nullptr;
-	}
+	m_upkGizmoManager->UnpickObject();
 }
 
 void Scene::OnMouseRUp(WPARAM wParam, int x, int y)
@@ -389,10 +261,10 @@ bool Scene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPara
 
 void Scene::AnimateObjects(float fTimeElapsed)
 {
+	if (m_upkGizmoManager) m_upkGizmoManager->AnimateObjects(m_eChangeType, fTimeElapsed);
+	
 	for (auto obj : m_listObject)
 		obj->AnimateObjects(fTimeElapsed);
-
-	if(m_upkGizmoManager) m_upkGizmoManager->AnimateObjects(m_eChangeType, fTimeElapsed);
 }
 
 void Scene::Render(float fTimeElapsed)

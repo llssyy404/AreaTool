@@ -25,6 +25,7 @@ Object::Object()
 	m_vLook = XMFLOAT3(0.f, 0.f, 1.f);
 	m_vPosition = XMFLOAT3(0.f, 0.f, 0.f);
 	m_f3Rotation = XMFLOAT3(0.f, 0.f, 0.f);
+	m_f4Color = DEFINE::COLOR_WHITE;
 
 	m_AxisAlignedBox.Center = m_vPosition;
 	m_AxisAlignedBox.Extents = XMFLOAT3(0.5f, 0.5f, 0.5f);
@@ -34,8 +35,6 @@ Object::Object()
 	m_BaseOrientedBox.Extents = XMFLOAT3(0.5f, 0.5f, 0.5f);
 	m_BaseOrientedBox.Orientation = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
 	m_OrientedBox = m_BaseOrientedBox;
-
-	m_f4Color = DEFINE::COLOR_WHITE;
 }
 
 Object::~Object()
@@ -286,30 +285,45 @@ void Object::WorldMatrixSRT()
 	m_World = XMMatrixIdentity();
 	m_World = XMMatrixMultiply(XMMatrixMultiply(XMMatrixMultiply(m_World, scale), rot), trans);
 	
-	TransformAxisAlignedBox(&m_AxisAlignedBox, &m_AxisAlignedBox, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&m_vPosition));
+	//TransformAxisAlignedBox(&m_AxisAlignedBox, &m_AxisAlignedBox, XMLoadFloat3(&m_f3Scale), XMQuaternionRotationMatrix(rot), XMLoadFloat3(&m_vPosition));
 	
+	XMVECTOR vQuaternion = XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z));
+	XMStoreFloat4(&m_OrientedBox.Orientation, vQuaternion);
+	m_OrientedBox.Center = m_vPosition;
+
 	m_OrientedBox.Extents.x = m_BaseOrientedBox.Extents.x * m_f3Scale.x;
 	m_OrientedBox.Extents.y = m_BaseOrientedBox.Extents.y * m_f3Scale.y;
 	m_OrientedBox.Extents.z = m_BaseOrientedBox.Extents.z * m_f3Scale.z;
-	
-	XMVECTOR vQuaternion = XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_f3Rotation.x), XMConvertToRadians(m_f3Rotation.y), XMConvertToRadians(m_f3Rotation.z));
-	XMStoreFloat4(&m_BaseOrientedBox.Orientation, vQuaternion);
-	m_BaseOrientedBox.Center = m_vPosition;
 }
 
 void Object::Pitch(float fAngle)
 {
 	m_f3Rotation.x += fAngle;
+	XMMATRIX R = XMMatrixRotationX(fAngle);
+
+	XMStoreFloat3(&m_vRight, XMVector3TransformNormal(XMLoadFloat3(&m_vRight), R));
+	XMStoreFloat3(&m_vUp, XMVector3TransformNormal(XMLoadFloat3(&m_vUp), R));
+	XMStoreFloat3(&m_vLook, XMVector3TransformNormal(XMLoadFloat3(&m_vLook), R));
 }
 
 void Object::Yaw(float fAngle)
 {
 	m_f3Rotation.y += fAngle;
+	XMMATRIX R = XMMatrixRotationY(fAngle);
+
+	XMStoreFloat3(&m_vUp, XMVector3TransformNormal(XMLoadFloat3(&m_vUp), R));
+	XMStoreFloat3(&m_vLook, XMVector3TransformNormal(XMLoadFloat3(&m_vLook), R));
+	XMStoreFloat3(&m_vRight, XMVector3TransformNormal(XMLoadFloat3(&m_vRight), R));
 }
 
 void Object::Roll(float fAngle)
 {
 	m_f3Rotation.z += fAngle;
+	XMMATRIX R = XMMatrixRotationZ(fAngle);
+
+	XMStoreFloat3(&m_vLook, XMVector3TransformNormal(XMLoadFloat3(&m_vLook), R));
+	XMStoreFloat3(&m_vRight, XMVector3TransformNormal(XMLoadFloat3(&m_vRight), R));
+	XMStoreFloat3(&m_vUp, XMVector3TransformNormal(XMLoadFloat3(&m_vUp), R));
 }
 
 void Object::Translate(float d, XMFLOAT3 f3Axis)

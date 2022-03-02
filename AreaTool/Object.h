@@ -55,7 +55,7 @@ public:
 	XNA::AxisAlignedBox GetAABB() const { return m_AxisAlignedBox; }
 	XNA::OrientedBox GetOBB() const { return m_OrientedBox; }
 	void		SetPosition(XMFLOAT3 vPosition) { m_vPosition = vPosition; }
-	void		SetRotation(XMFLOAT3 f3Rotation) { f3Rotation = m_f3Rotation; }
+	void		SetRotation(XMFLOAT3 f3Rotation) { m_f3Rotation = f3Rotation; }
 	void		SetSelection(bool sel) { m_bSelect = sel; }
 
 	virtual void	AnimateObjects(float fTimeElapsed);
